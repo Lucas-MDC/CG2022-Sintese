@@ -1,0 +1,70 @@
+\documentclass[12pt, a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx} % Images
+\usepackage{float} % Exact image positioning
+\usepackage[bottom]{footmisc} % Footnotes will stick to the bottom of the page, AS THEY SHOULD
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{empheq}
+\usepackage{xcolor} % Colored text
+\usepackage{minted} % Simple syntax highlighting
+%* * * * * * * * * * * * * * * * * *%
+
+% Document margins
+\usepackage{geometry}
+\geometry
+{
+	a4paper     ,
+	left=3.0cm  ,
+ 	top=3.5cm   , 
+ 	right=2.0cm ,
+ 	bottom=2.0cm
+}
+
+% Indents the first paragraph
+\usepackage{indentfirst}
+
+% Indents all paragraphs
+\setlength{\parindent}{1.25cm}
+
+% Whitespace before each paragraph
+\setlength{\parskip}{1em}
+
+% Space between paragraphs
+\renewcommand{\baselinestretch}{1.2}
+
+% Vertical space between lines inside \align
+\setlength{\jot}{10pt}
+
+\title{Computação Gráfica\\ Sítense}
+\author{Lucas Moura de Carvalho\\9862905}
+\date{}
+
+% Document start
+\begin{document}
+
+% Changes the title of the content list
+\renewcommand*\contentsname{Sumário}
+
+% Removes page counting
+\pagenumbering{gobble}
+% Inserts the tittle
+\maketitle
+\newpage
+\tableofcontents
+\newpage
+
+% Restores page conting
+\pagenumbering{arabic}
+
+\section{Tela}
+
+Consideraremos $\Omega = (\Omega_{x},\;\Omega_{y},\;\Omega_{z})$ como a posição do observador, olhando na direção de um ponto $D = (D_{x},\;D_{y},\;D_{z})$. O vetor principal que determina a direção do centro da tela é vetor $P = \overrightarrow{OD} = D-O$, normalizado para $\hat{P}=\frac{P}{||P||}$.
+
+O vetor orthogonal na direção horizontal é $\hat{H} = \hat{P} \times (0,0,1)$ e o vetorl orthognal na direção vertical é $\hat{V} = -(\hat{P} \times \hat{H})$. Com esses três vetores é possível gerar pontos nas direções orthogonais do plano projetivo a partir de movimentos ao longo de ambos os vetores. Considere o centro do plano a uma distância d, então um ponto gerado por movimentos orthogonais a partir do centro em disâncias $\delta_{h}$ na horizontal e $\delta_{v}$ na vertical é dado por:
+\begin{align*}
+	& p(x,\;y,\;d,\;\delta_{h}, \delta_{v}) = O + d \cdot T + \delta_{h}\hat{H} + \delta{v}\hat{V}
+\end{align*}
+
+
+\end{document}
