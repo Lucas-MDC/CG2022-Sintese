@@ -2,9 +2,9 @@
 
 int main(void)
 {
-    //rendererTest();
+    //algebraTest();
 
-    programLoop();
+    mainRender(getTestScene());
 
     return 0;
 }

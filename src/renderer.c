@@ -65,8 +65,9 @@ float* loadVertexBuffer(unsigned int width, unsigned int height)
     return vertices;
 };
 
-void getPixelVertexCoordinates(float* vertices, unsigned int width, unsigned int height)
+float* getPixelVertexCoordinates(float* vertices, unsigned int width, unsigned int height)
 {
+    vertices = (float*)malloc(sizeof(float)*height*width*3);
     int pos = 0;
     for (int h = (int)-(height)/2; h < (int)(height)/2; h++)
     {
@@ -79,21 +80,31 @@ void getPixelVertexCoordinates(float* vertices, unsigned int width, unsigned int
         }
     }
 
-    return;
+    return vertices;
 };
 
-int programLoop()
+unsigned int getShaderProgram()
 {
-    int width  = 1920;
-    int height = 1080;
-    openGlEnv env = envInitialize(width, height);
-    
     unsigned int vertexShader   = getShader("./vertex.glsl", GL_VERTEX_SHADER);
     unsigned int fragmentShader = getShader("./fragment.glsl", GL_FRAGMENT_SHADER);
     unsigned int shaderProgram  = glCreateProgram();
     linkShaders(shaderProgram, vertexShader, fragmentShader);
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
+
+    return shaderProgram;
+}
+
+int mainRender(Scene scene)
+{
+    //int width  = 1920;
+    //int height = 1080;
+
+    int width  = 800;
+    int height = 800;
+
+    openGlEnv env = envInitialize(width, height);
+    unsigned int shaderProgram = getShaderProgram();
 
     // Geometry data
     float dh   = 0.001;
@@ -103,8 +114,7 @@ int programLoop()
     vec3   origin    = (vec3){-5, 0, 0};
     vec3   direction = (vec3){ 5, 0, 0};
 
-    float* pixelVertexCoordinates = (float*)malloc(sizeof(float)*env.height*env.width*3);
-    getPixelVertexCoordinates(pixelVertexCoordinates, env.width, env.height);
+    float* pixelVertexCoordinates = getPixelVertexCoordinates(pixelVertexCoordinates, env.width, env.height);
 
     vec3* rayDirections = malloc(sizeof(vec3)*env.width*env.height);
 
@@ -123,14 +133,14 @@ int programLoop()
 
     float geometry[] = 
     {
-        -1.0, 0, 0.0, 1.0,
-         0.2, 0.8, 0.8, 0.45,
-         0.5, 0.8, 0.8, 0.45,
-         5   
+        0, 0, 0.0, 1.0,
+        0.2, 0.8, 0.8, 0.45,
+        0.5, 0.8, 0.8, 0.45,
+        10
     };
 
     float ambientLight[4] = {1, 1, 1, 0.1};
-    float light[7]        = {10.0, 10, 10, 1, 1, 1, 1};
+    float light[7]        = {0.0, 5, 5, 1, 1, 1, 1};
 
     unsigned int VBO;
     unsigned int VAO;
@@ -138,10 +148,24 @@ int programLoop()
     glGenBuffers(1, &VBO);
     glBindVertexArray(VAO);
 
+    float angle = 0.0;
+
+
     while(!glfwWindowShouldClose(env.window))
     {
+        angle += 0.1;
+
+        if(angle >= 3.1415*2.0)
+            angle = 0.0;
+
+        origin    = (vec3){5*cos(angle), 5*sin(angle), 0};
+        direction = (vec3){geometry[1] - origin.x, geometry[2] - origin.y, geometry[3] - origin.z};
+
+        // Needs urgents optimization
+        // May be moved to the shader in a pixel by pixel basis
+        // Send P, H, V, dh, dv and let each pixel get is ray direction
         getRayDirections(rayDirections, env.width, env.height, origin, direction, dh, dv, distance);
-        
+
         // Escrevendo info de cada raio de cada pixel no buffer
         pos = 3;
         for(int i = 0; i < env.width*env.height; i++)
@@ -200,7 +224,7 @@ int programLoop()
     return 0;
 }
 
-void rendererTest()
+void algebraTest()
 {
     int width  = 3;
     int height = 5;

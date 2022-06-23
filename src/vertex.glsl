@@ -87,8 +87,6 @@ vec3 sphereNormal(vec3 p, vec4 s)
 */
 float phongIlluminationChannel(vec2 amb, vec2 light, vec2 difC, vec2 speC, float normA, float obsA, float specPer)
 {
-    //return amb[0]*amb[1]*difC[0] + light[1]*light[0]*(difC[1]*difC[0]*cos(normA) + speC[1]*speC[0]*pow(cos(obsA), specPer));
-    //debug code, remove abs after shadow ray application
     return amb[0]*amb[1]*difC[0] + light[1]*light[0]*(difC[1]*difC[0]*cos(abs(normA)) + speC[1]*speC[0]*pow(abs(cos(obsA)), specPer));
 }
 
@@ -121,7 +119,7 @@ vec4 rayCast(vec3 rO, vec3 rD, vec4 ambientLight, float light[7], float sphere[1
     vec3  intersect    = vec3(rayIntersect.x, rayIntersect.y, rayIntersect.z);
 
     if(intersected == NOT_INTERSECT)
-        return vec4(1, 1, 1, 0);
+        return vec4(0, 0, 0, 0);
 
     vec3 normal       = sphereNormal(intersect, sphereGeometry);
     vec3 observerRay  = normalize(rO - intersect);
