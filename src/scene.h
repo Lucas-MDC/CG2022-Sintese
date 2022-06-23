@@ -100,14 +100,14 @@ typedef struct Scene
 {
     ObserverProcessed observer;
     AmbientLight      ambientLight;
-    unsigned int      lightSourceNumber;
+    int               lightSourceNumber;
     float*            lightSources;
-    unsigned int      geometryObjectsNumber;
-    unsigned int*     geometryObjectsShapeLocations;
+    int               geometryObjectsNumber;
+    int*              geometryObjectsShapeLocations;
     float*            geometryObjectsTypes;
     float*            geometryObjectsColor;
     float*            geometryObjectsShapes;
-    unsigned int      geometryObjectsTotalSize;
+    int               geometryObjectsTotalSize;
 } Scene;
 
 unsigned int loadBuffer(float* buffer, void* object, unsigned int size);

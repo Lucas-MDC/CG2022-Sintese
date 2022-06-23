@@ -149,10 +149,9 @@ int mainRender(Scene scene)
     glBindVertexArray(VAO);
 
     float angle = 0.0;
-
-
     while(!glfwWindowShouldClose(env.window))
     {
+        /*
         angle += 0.1;
 
         if(angle >= 3.1415*2.0)
@@ -160,6 +159,7 @@ int mainRender(Scene scene)
 
         origin    = (vec3){5*cos(angle), 5*sin(angle), 0};
         direction = (vec3){geometry[1] - origin.x, geometry[2] - origin.y, geometry[3] - origin.z};
+        */
 
         // Needs urgents optimization
         // May be moved to the shader in a pixel by pixel basis
@@ -194,17 +194,31 @@ int mainRender(Scene scene)
         inputHandler(env.window);
         glUseProgram(shaderProgram);
         
+        // Old
         int loc = glGetUniformLocation(shaderProgram, "rayOrigin");
         glUniform3fv(loc, 1, (float*)&origin);
 
         loc = glGetUniformLocation(shaderProgram, "geometry");
         glUniform1fv(loc, 13, geometry);
 
-        loc = glGetUniformLocation(shaderProgram, "ambientLight");
-        glUniform4fv(loc, 1, ambientLight);
-
         loc = glGetUniformLocation(shaderProgram, "light");
         glUniform1fv(loc, 7, light);
+
+        // New
+        loc = glGetUniformLocation(shaderProgram, "observer");
+        glUniform1fv(loc, sizeof(scene.observer), (float*)&scene.observer);
+
+        loc = glGetUniformLocation(shaderProgram, "ambientLight");
+        glUniform4fv(loc, 1, (float*)&scene.ambientLight);
+
+        loc = glGetUniformLocation(shaderProgram, "shapeLocations");
+        glUniform1iv(loc, scene.geometryObjectsNumber, scene.geometryObjectsShapeLocations);
+
+        loc = glGetUniformLocation(shaderProgram, "shapeColors");
+        glUniform1fv(loc, sizeof(GeometryColor)*scene.geometryObjectsNumber, scene.geometryObjectsColor);
+
+        loc = glGetUniformLocation(shaderProgram, "shapes");
+        glUniform1fv(loc, scene.geometryObjectsTotalSize, scene.geometryObjectsShapes);
 
         glBindVertexArray(VAO);
         glDrawArrays(GL_POINTS, 0, env.height*env.width);

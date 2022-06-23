@@ -1,8 +1,121 @@
 #version 330 core
+#extension GL_NV_shader_buffer_load : enable
+out vec4 pixelNewColor;
 layout (location = 0) in vec3 pixelPos;
 layout (location = 1) in vec3 rayDirection;
-uniform vec3 rayOrigin;
 
+#define OBSERVER_STRUCT_SIZE 17
+#define GEOMETRY_COLOR_STRUCT_SIZE 11
+
+struct ObserverProcessed
+{
+    float xOrigin;
+    float yOrigin;
+    float zOrigin;
+    float xCenterVersor;
+    float yCenterVersor;
+    float zCenterVersor;
+    float xHorizontalVersor;
+    float yHorizontalVersor;
+    float zHorizontalVersor;
+    float xVerticalVersor;
+    float yVerticalVersor;
+    float zVerticalVersor;
+    float width;
+    float height;
+    float dh;
+    float dv;
+    float distance;
+};
+
+struct LightSource
+{
+    float type;
+    float x;
+    float y;
+    float z;
+    float r;
+    float g;
+    float b;
+    float attenuation;
+};
+
+struct GeometryColor
+{
+    float ambientConstant;
+    float rDiffuse;
+    float gDiffuse;
+    float bDiffuse;
+    float diffuseConstant;
+    float rSpecular;
+    float gSpecular;
+    float bSpecular;
+    float specularConstant;
+    float transparency;
+    float shininess;
+};
+
+struct GeometrySphere
+{
+    float xCenter;
+    float yCenter;
+    float zCenter;
+    float radius;
+};
+
+uniform float observer[17];
+
+// TODO: modificar shader dinamicamente com base na cena
+uniform int   shapeLocations[3];
+uniform float shapeColors[33];
+uniform float shapes[12];
+
+
+/*
+    shapeIndex = which shape is it
+*/
+int getShapeAbsolutePosition(int shapeIndex)
+{
+    return shapeLocations[shapeIndex];
+}
+
+/*
+    absposition = absolute position inside the shapes array
+*/
+struct GeometrySphere makeGeometrySphere(int absposition)
+{
+    return GeometrySphere(shapes[absposition], shapes[absposition+1], shapes[absposition+2], shapes[absposition+3]);
+}
+
+/*
+    shapeIndex = which shape is it
+*/
+struct GeometryColor makeGeometryColor(int shapeIndex)
+{
+    int pos = shapeIndex*GEOMETRY_COLOR_STRUCT_SIZE;
+    return GeometryColor(
+                            shapeColors[pos + 0], shapeColors[pos + 1], shapeColors[pos + 2], shapeColors[pos + 3], shapeColors[pos + 4],
+                            shapeColors[pos + 5], shapeColors[pos + 6], shapeColors[pos + 7], shapeColors[pos + 8], shapeColors[pos + 9], 
+                            shapeColors[pos + 10]
+                        );
+}
+
+struct GeometryColor
+{
+    float ambientConstant;
+    float rDiffuse;
+    float gDiffuse;
+    float bDiffuse;
+    float diffuseConstant;
+    float rSpecular;
+    float gSpecular;
+    float bSpecular;
+    float specularConstant;
+    float transparency;
+    float shininess;
+};
+
+uniform vec3 rayOrigin;
 /*
     x, y, z position 
     radius
@@ -26,7 +139,7 @@ uniform vec4 ambientLight;
     light attenuation coefficient
 */
 uniform float light[7];
-out vec4 pixelNewColor;
+
 
 #define INTERSECT     1.0
 #define NOT_INTERSECT 0.0
@@ -152,6 +265,25 @@ vec4 rayCast(vec3 rO, vec3 rD, vec4 ambientLight, float light[7], float sphere[1
 
 void main()
 {
+    int obj = 1;
+    GeometryColor  gc = makeGeometryColor(obj);
+    GeometrySphere gs = makeGeometrySphere(getShapeAbsolutePosition(obj));
+
+    /*
+        x, y, z position radius
+        r, g, b difuse color, difuse coefficient
+        r, g, b specular color, specular coefficient
+        specularity perfection
+    */
+    float sphereTest[13] = float[13]
+    (
+        gs.xCenter, gs.yCenter, gs.zCenter, gs.radius, 
+        gc.rDiffuse, gc.gDiffuse, gc.bDiffuse, gc.diffuseConstant, 
+        gc.rSpecular, gc.gSpecular, gc.bSpecular, gc.specularConstant, gc.shininess
+    );
+
     gl_Position   = vec4(pixelPos.x, pixelPos.y, 0, 1.0);
-    pixelNewColor = rayCast(rayOrigin, rayDirection, ambientLight, light, geometry);
+    pixelNewColor = rayCast(rayOrigin, rayDirection, vec4(ambientLight.r, ambientLight.g, ambientLight.b, 1.0), light, sphereTest);
+
+    //pixelNewColor = vec4(gs.radius, 0, 0, 1.0);
 }

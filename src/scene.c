@@ -47,7 +47,7 @@ Scene getTestScene()
     };
     ObserverProcessed obsp = getObserverProcessed(obs);
 
-    AmbientLight ambientLight = {0.1, 0.1, 0.1};
+    AmbientLight ambientLight = {0.0, 0.05, 0.1};
 
     LightSource lightA = 
     {
@@ -96,13 +96,13 @@ Scene getTestScene()
     };
 
     GeometrySphere sphereA = {5.0,  0.0, 0.0, 1.0};
-    GeometrySphere sphereB = {5.0,  5.0, 0.0, 1.0};
-    GeometrySphere sphereC = {5.0, -5.0, 0.0, 2.0};
+    GeometrySphere sphereB = {5.0,  3.0, 0.0, 1.0};
+    GeometrySphere sphereC = {5.0, -3.0, 0.0, 2.0};
 
-    unsigned int  lightSourceNumber       = 2;
+    int           lightSourceNumber       = 2;
     float*        lightSourceBuffer       = (float*)calloc(1, sizeof(LightSource)*lightSourceNumber);
-    unsigned int  geometryShapesNumber    = 3;
-    unsigned int* geometryShapesLocations = (unsigned int*)calloc(1, sizeof(unsigned int)*geometryShapesNumber);
+    int           geometryShapesNumber    = 3;
+    int*          geometryShapesLocations = (int*)calloc(1, sizeof(unsigned int)*geometryShapesNumber);
     float*        geometryTypesBuffer     = (float*)calloc(1, sizeof(float)*geometryShapesNumber);
     float*        geometryColorsBuffer    = (float*)calloc(1, sizeof(GeometryColor)*geometryShapesNumber);
     float*        geometryShapesBuffer    = (float*)calloc(1, sizeof(GeometrySphere)*geometryShapesNumber);
@@ -146,6 +146,7 @@ Scene getTestScene()
     loc += loadBuffer(&geometryShapesBuffer[loc], (float*)&sphereB, sizeof(GeometrySphere));
     geometryShapesLocations[2] = loc;
     loc += loadBuffer(&geometryShapesBuffer[loc], (float*)&sphereC, sizeof(GeometrySphere));
+    scene.geometryObjectsTotalSize = loc;
 
     printf("%f\n", scene.observer.xVerticalVersor);
     printf("%f, %f\n", ((LightSource*)scene.lightSources)->attenuation, ((LightSource*)&scene.lightSources[sizeof(LightSource)/sizeof(float)])->attenuation);
@@ -159,6 +160,7 @@ Scene getTestScene()
         ((GeometrySphere*)&scene.geometryObjectsShapes[scene.geometryObjectsShapeLocations[1]])->radius,
         ((GeometrySphere*)&scene.geometryObjectsShapes[scene.geometryObjectsShapeLocations[2]])->radius
     );
+    printf("%i \n", scene.geometryObjectsTotalSize);
 
     return scene;
 }
