@@ -14,8 +14,6 @@ char* readShaderFile(char* path)
     fclose(file);
     shaderCode[size] = '\0';
 
-    //printf("%s", shaderCode);
-
     return shaderCode;
 }
 
@@ -80,6 +78,10 @@ unsigned int getSceneVertexShader(char* path, Scene scene)
     assert(numberLocation != NULL);
     replaceShaderNumber(numberLocation, 21, scene.geometryObjectsNumber);
 
+    numberLocation = strstr(shaderCode, "SHAPE_TYPES_SIZE 00000000");
+    assert(numberLocation != NULL);
+    replaceShaderNumber(numberLocation, 17, scene.geometryObjectsNumber);        
+
     numberLocation = strstr(shaderCode, "SHAPE_COLORS_SIZE 00000000");
     assert(numberLocation != NULL);
     replaceShaderNumber(numberLocation, 18, scene.geometryObjectsNumber*sizeof(GeometryColor)/sizeof(float));
@@ -87,8 +89,6 @@ unsigned int getSceneVertexShader(char* path, Scene scene)
     numberLocation = strstr(shaderCode, "SHAPES_SIZE 00000000");
     assert(numberLocation != NULL);
     replaceShaderNumber(numberLocation, 12, scene.geometryObjectsTotalSize);
-
-    printf("%s", shaderCode);
 
     return getShaderInternal(shaderCode, GL_VERTEX_SHADER);
 }

@@ -66,7 +66,24 @@ vec3 getScreenVerticalVersor(vec3 centerVer, vec3 horizontalVer)
 
 vec3 getScreenPoint(vec3 origin, vec3 center, vec3 horizontal, vec3 vertical, float dh, float dv, float distance)
 {
-    return addVec3(mulConstVec3(distance, center), addVec3(mulConstVec3(dh, horizontal), mulConstVec3(dv, vertical)));
+    return addVec3(mulConstVec3(1/distance, center), addVec3(mulConstVec3(dh, horizontal), mulConstVec3(dv, vertical)));
+}
+
+float* getPixelDislocations(unsigned int width, unsigned int height)
+{
+    float* dislocations = (float*)malloc(sizeof(float)*2*width*height);
+
+    for(int i = 0; i < height; i++)
+    {
+        int lineJump = i*width;
+        for(int j = 0; j < width; j++)
+        {
+            dislocations[(j + lineJump)*2    ] = (float) i; 
+            dislocations[(j + lineJump)*2 + 1] = (float) j;
+        }
+    }
+
+    return dislocations;
 }
 
 void buildRayDirections(vec3* pixels, unsigned int width, unsigned int height, vec3 origin, vec3 center, vec3 horizontal, vec3 vertical, float dh, float dv, float distance)

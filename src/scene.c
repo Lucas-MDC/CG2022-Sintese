@@ -40,19 +40,19 @@ Scene getTestScene()
 {
     Observer obs = 
     {
-        0.0  , 0.0  , 0.0, // x, y, z origin   coordinates
+        -5.0  , 0.0  , 1.0, // x, y, z origin   coordinates
         1.0  , 0.0  , 0.0, // x, y, z observed coordinates 
-        800.0, 800.0,      // resolution 
-        0.01 , 0.01 , 1.0  // delta horizontal, delta vertical, ditance
+        1920.0, 1080.0,      // resolution 
+        0.01 , 0.01 , 1.0  // delta horizontal, delta vertical, distance
     };
     ObserverProcessed obsp = getObserverProcessed(obs);
 
-    AmbientLight ambientLight = {0.0, 0.05, 0.1};
+    AmbientLight ambientLight = {0.1, 0.1, 0.1};
 
     LightSource lightA = 
     {
         LIGHT_TYPE_POINT, 
-        5.0, 0.0, 5.0, // x, y, z cooridantes
+        10.0, 0.0, 5.0, // x, y, z cooridantes
         1.0, 1.0, 1.0, // r, g, b colors
         1              // attenuation factor
     };
@@ -60,9 +60,9 @@ Scene getTestScene()
     LightSource lightB = 
     {
         LIGHT_TYPE_POINT,
-        5.0, 10.0, 5.0  , // x, y, z cooridantes
+        10.0, 10.0, 5.0  , // x, y, z cooridantes
         1.0, 0.0 , 0.0  , // r, g, b colors
-        0.5               // attenuation factor
+        1                 // attenuation factor
     };
 
     GeometryHeader geoHeader = 
@@ -95,15 +95,15 @@ Scene getTestScene()
         0.0, 20.0            // transparency and shininess
     };
 
-    GeometrySphere sphereA = {5.0,  0.0, 0.0, 1.0};
-    GeometrySphere sphereB = {5.0,  3.0, 0.0, 1.0};
-    GeometrySphere sphereC = {5.0, -3.0, 0.0, 2.0};
+    GeometrySphere sphereA = {10.0,  0.0, 0.0, 1.0};
+    GeometrySphere sphereB = {10.0,  3.0, 0.0, 1.0};
+    GeometrySphere sphereC = {10.0, -3.0, 0.0, 2.0};
 
     int           lightSourceNumber       = 2;
     float*        lightSourceBuffer       = (float*)calloc(1, sizeof(LightSource)*lightSourceNumber);
     int           geometryShapesNumber    = 3;
     int*          geometryShapesLocations = (int*)calloc(1, sizeof(unsigned int)*geometryShapesNumber);
-    float*        geometryTypesBuffer     = (float*)calloc(1, sizeof(float)*geometryShapesNumber);
+    int*          geometryTypesBuffer     = (int*)calloc(1, sizeof(float)*geometryShapesNumber);
     float*        geometryColorsBuffer    = (float*)calloc(1, sizeof(GeometryColor)*geometryShapesNumber);
     float*        geometryShapesBuffer    = (float*)calloc(1, sizeof(GeometrySphere)*geometryShapesNumber);
 
@@ -148,6 +148,7 @@ Scene getTestScene()
     loc += loadBuffer(&geometryShapesBuffer[loc], (float*)&sphereC, sizeof(GeometrySphere));
     scene.geometryObjectsTotalSize = loc;
 
+    /*
     printf("%f\n", scene.observer.xVerticalVersor);
     printf("%f, %f\n", ((LightSource*)scene.lightSources)->attenuation, ((LightSource*)&scene.lightSources[sizeof(LightSource)/sizeof(float)])->attenuation);
     printf("%f, %f, %f\n", 
@@ -161,6 +162,7 @@ Scene getTestScene()
         ((GeometrySphere*)&scene.geometryObjectsShapes[scene.geometryObjectsShapeLocations[2]])->radius
     );
     printf("%i \n", scene.geometryObjectsTotalSize);
-
+    */
+    
     return scene;
 }

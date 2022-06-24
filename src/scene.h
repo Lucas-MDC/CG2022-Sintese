@@ -104,7 +104,7 @@ typedef struct Scene
     float*            lightSources;
     int               geometryObjectsNumber;
     int*              geometryObjectsShapeLocations;
-    float*            geometryObjectsTypes;
+    int*              geometryObjectsTypes;
     float*            geometryObjectsColor;
     float*            geometryObjectsShapes;
     int               geometryObjectsTotalSize;
