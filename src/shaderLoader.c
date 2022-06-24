@@ -37,16 +37,66 @@ unsigned int compileShader(unsigned int shader)
     return 0;
 }
 
-unsigned int getShader(char* path, unsigned int type)
+unsigned int getShaderInternal(char* shaderCode, unsigned int type)
 {
-    char*        shaderCode = readShaderFile(path);
-    unsigned int shader     = glCreateShader(type);
+    unsigned int shader  = glCreateShader(type);
 
     glShaderSource(shader, 1, (const GLchar * const*)&shaderCode, NULL);
     free((void*) shaderCode);
     
     assert(compileShader(shader) == 0);
     return shader;
+}
+
+int intDigits(unsigned int i)
+{
+    int n = 0;
+    while(i > 0)
+    {
+        n++;
+        i = i/10;
+    }
+
+    return n;
+}
+
+void replaceShaderNumber(char* str, unsigned int pos, unsigned int number)
+{
+    char buffer[] = "        ";
+    snprintf(&buffer[8-intDigits(number)], intDigits(number)+1, "%d", number);
+    memcpy(&str[pos], buffer, 8);
+}
+
+unsigned int getSceneVertexShader(char* path, Scene scene)
+{
+    char* shaderCode     = readShaderFile(path);
+    char* numberLocation = NULL;
+
+    numberLocation = strstr(shaderCode, "LIGHT_SOURCES_SIZE 00000000");
+    assert(numberLocation != NULL);
+    replaceShaderNumber(numberLocation, 19, scene.lightSourceNumber*sizeof(LightSource)/sizeof(float));
+
+    numberLocation = strstr(shaderCode, "SHAPE_LOCATIONS_SIZE 00000000");
+    assert(numberLocation != NULL);
+    replaceShaderNumber(numberLocation, 21, scene.geometryObjectsNumber);
+
+    numberLocation = strstr(shaderCode, "SHAPE_COLORS_SIZE 00000000");
+    assert(numberLocation != NULL);
+    replaceShaderNumber(numberLocation, 18, scene.geometryObjectsNumber*sizeof(GeometryColor)/sizeof(float));
+
+    numberLocation = strstr(shaderCode, "SHAPES_SIZE 00000000");
+    assert(numberLocation != NULL);
+    replaceShaderNumber(numberLocation, 12, scene.geometryObjectsTotalSize);
+
+    printf("%s", shaderCode);
+
+    return getShaderInternal(shaderCode, GL_VERTEX_SHADER);
+}
+
+unsigned int getShader(char* path, unsigned int type)
+{
+    char*  shaderCode = readShaderFile(path);
+    return getShaderInternal(shaderCode, type);
 }
 
 void linkShaders(unsigned int shaderProgram, unsigned int vertexShader, unsigned int fragmentShader)

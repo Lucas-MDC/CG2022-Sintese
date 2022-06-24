@@ -38,10 +38,12 @@ void inputHandler(GLFWwindow* window)
         glfwSetWindowShouldClose(window, true);
 }
 
+/*
 void render(openGlEnv* env, unsigned int shaderProgram, unsigned int* VAO)
 {
 
 }
+*/
 
 float* loadVertexBuffer(unsigned int width, unsigned int height)
 {
@@ -83,9 +85,9 @@ float* getPixelVertexCoordinates(float* vertices, unsigned int width, unsigned i
     return vertices;
 };
 
-unsigned int getShaderProgram()
+unsigned int getShaderProgram(Scene scene)
 {
-    unsigned int vertexShader   = getShader("./vertex.glsl", GL_VERTEX_SHADER);
+    unsigned int vertexShader   = getSceneVertexShader("./vertex.glsl", scene);
     unsigned int fragmentShader = getShader("./fragment.glsl", GL_FRAGMENT_SHADER);
     unsigned int shaderProgram  = glCreateProgram();
     linkShaders(shaderProgram, vertexShader, fragmentShader);
@@ -104,7 +106,7 @@ int mainRender(Scene scene)
     int height = 800;
 
     openGlEnv env = envInitialize(width, height);
-    unsigned int shaderProgram = getShaderProgram();
+    unsigned int shaderProgram = getShaderProgram(scene);
 
     // Geometry data
     float dh   = 0.001;
@@ -210,6 +212,9 @@ int mainRender(Scene scene)
 
         loc = glGetUniformLocation(shaderProgram, "ambientLight");
         glUniform4fv(loc, 1, (float*)&scene.ambientLight);
+
+        loc = glGetUniformLocation(shaderProgram, "lightSources");
+        glUniform1fv(loc, sizeof(LightSource)*scene.lightSourceNumber, scene.lightSources);
 
         loc = glGetUniformLocation(shaderProgram, "shapeLocations");
         glUniform1iv(loc, scene.geometryObjectsNumber, scene.geometryObjectsShapeLocations);

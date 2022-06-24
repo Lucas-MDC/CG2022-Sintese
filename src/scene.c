@@ -54,7 +54,7 @@ Scene getTestScene()
         LIGHT_TYPE_POINT, 
         5.0, 0.0, 5.0, // x, y, z cooridantes
         1.0, 1.0, 1.0, // r, g, b colors
-        1             // attenuation factor
+        1              // attenuation factor
     };
 
     LightSource lightB = 

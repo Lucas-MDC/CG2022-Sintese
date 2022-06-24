@@ -5,6 +5,7 @@ layout (location = 0) in vec3 pixelPos;
 layout (location = 1) in vec3 rayDirection;
 
 #define OBSERVER_STRUCT_SIZE 17
+#define LIGHT_SOURCE_STRUCT_SIZE 8
 #define GEOMETRY_COLOR_STRUCT_SIZE 11
 
 struct ObserverProcessed
@@ -63,13 +64,38 @@ struct GeometrySphere
     float radius;
 };
 
+/*
 uniform float observer[17];
 
 // TODO: modificar shader dinamicamente com base na cena
+uniform float lightSources[16];
 uniform int   shapeLocations[3];
 uniform float shapeColors[33];
 uniform float shapes[12];
+*/
 
+uniform float observer[OBSERVER_STRUCT_SIZE];
+
+// DONT TOUCH THESE, THE PRECISE LINES ARE USED TO DYNAMICALLY SET THE SIZES IN THE CPU CODE
+// Example: 16 light sources = #define LIGHT_SOURCES_SIZE 00000000 -> #define LIGHT_SOURCES_SIZE       16
+#define LIGHT_SOURCES_SIZE 00000000
+#define SHAPE_LOCATIONS_SIZE 00000000
+#define SHAPE_COLORS_SIZE 00000000
+#define SHAPES_SIZE 00000000
+
+uniform float lightSources[LIGHT_SOURCES_SIZE];
+uniform int   shapeLocations[SHAPE_LOCATIONS_SIZE];
+uniform float shapeColors[SHAPE_COLORS_SIZE];
+uniform float shapes[SHAPES_SIZE];
+
+struct LightSource makeLightSource(int lightIndex)
+{
+    int pos = lightIndex*LIGHT_SOURCE_STRUCT_SIZE;
+    return LightSource(
+                        lightSources[pos + 0], lightSources[pos + 1], lightSources[pos + 2], lightSources[pos + 3],
+                        lightSources[pos + 4], lightSources[pos + 5], lightSources[pos + 6], lightSources[pos + 7]
+                      );
+}
 
 /*
     shapeIndex = which shape is it
@@ -265,9 +291,10 @@ vec4 rayCast(vec3 rO, vec3 rD, vec4 ambientLight, float light[7], float sphere[1
 
 void main()
 {
-    int obj = 1;
+    int obj = 2;
     GeometryColor  gc = makeGeometryColor(obj);
     GeometrySphere gs = makeGeometrySphere(getShapeAbsolutePosition(obj));
+    LightSource    ls = makeLightSource(0);
 
     /*
         x, y, z position radius
@@ -285,5 +312,5 @@ void main()
     gl_Position   = vec4(pixelPos.x, pixelPos.y, 0, 1.0);
     pixelNewColor = rayCast(rayOrigin, rayDirection, vec4(ambientLight.r, ambientLight.g, ambientLight.b, 1.0), light, sphereTest);
 
-    //pixelNewColor = vec4(gs.radius, 0, 0, 1.0);
+    //pixelNewColor = vec4(0, 0, 0, 1.0);
 }
