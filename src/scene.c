@@ -40,42 +40,36 @@ Scene getTestScene()
 {
     Observer obs = 
     {
-        -5.0  , 0.0  , 1.0, // x, y, z origin   coordinates
-        1.0  , 0.0  , 0.0, // x, y, z observed coordinates 
+        -5.0, 0.0, 0.0, // x, y, z origin   coordinates
+        1.0 , 0.0, 0.0, // x, y, z observed coordinates 
         1920.0, 1080.0,      // resolution 
-        0.01 , 0.01 , 1.0  // delta horizontal, delta vertical, distance
+        0.001, 0.001, 1  // delta horizontal, delta vertical, distance
     };
     ObserverProcessed obsp = getObserverProcessed(obs);
 
-    AmbientLight ambientLight = {0.1, 0.1, 0.1};
+    AmbientLight ambientLight = {1.0, 1.0, 1.0};
 
     LightSource lightA = 
     {
         LIGHT_TYPE_POINT, 
-        10.0, 0.0, 5.0, // x, y, z cooridantes
-        1.0, 1.0, 1.0, // r, g, b colors
+        5.0, 0.0, 10.0, // x, y, z cooridantes
+        1.0, 1.0, 1.0 , // r, g, b colors
         1              // attenuation factor
     };
 
     LightSource lightB = 
     {
         LIGHT_TYPE_POINT,
-        10.0, 10.0, 5.0  , // x, y, z cooridantes
-        1.0, 0.0 , 0.0  , // r, g, b colors
+        5.0, 5.0, 0.0  , // x, y, z cooridantes
+        1.0, 1.0 , 1.0  , // r, g, b colors
         1                 // attenuation factor
-    };
-
-    GeometryHeader geoHeader = 
-    {
-        GEOMETRY_TYPE_SHERE, 
-        3.0
     };
 
     GeometryColor sphereColorA =
     {
         0.1,                 // ambient constant
         0.8, 0.0, 0.0, 0.45, // r, g, b diffuse colors, diffuse constant
-        0.8, 0.6, 0.6, 0.45, // r, g, b specullar colors, specular constant
+        1.0, 0.8, 0.8, 0.45, // r, g, b specullar colors, specular constant
         0.0, 10.0            // transparency and shininess
     };
 
@@ -83,21 +77,21 @@ Scene getTestScene()
     {
         0.1,                 // ambient constant
         0.0, 0.8, 0.0, 0.45, // r, g, b diffuse colors, diffuse constant
-        0.6, 0.8, 0.6, 0.45, // r, g, b specullar colors, specular constant
+        0.8, 1.0, 0.8, 0.45, // r, g, b specullar colors, specular constant
         0.0, 15.0            // transparency and shininess
     };
 
     GeometryColor sphereColorC =
     {
         0.1,                 // ambient constant
-        0.6, 0.0, 0.8, 0.45, // r, g, b diffuse colors, diffuse constant
-        0.6, 0.0, 0.8, 0.45, // r, g, b specullar colors, specular constant
+        0.0, 0.0, 0.8, 0.45, // r, g, b diffuse colors, diffuse constant
+        0.8, 0.8, 1.0, 0.45, // r, g, b specullar colors, specular constant
         0.0, 20.0            // transparency and shininess
     };
 
-    GeometrySphere sphereA = {10.0,  0.0, 0.0, 1.0};
-    GeometrySphere sphereB = {10.0,  3.0, 0.0, 1.0};
-    GeometrySphere sphereC = {10.0, -3.0, 0.0, 2.0};
+    GeometrySphere sphereA = {5.0,  0.0, 0.0, 1.0};
+    GeometrySphere sphereB = {-1.0,  -2.0, 0.0, 0.5};
+    GeometrySphere sphereC = {5.0, -4.0, 0.0, 2.0};
 
     int           lightSourceNumber       = 2;
     float*        lightSourceBuffer       = (float*)calloc(1, sizeof(LightSource)*lightSourceNumber);
@@ -128,9 +122,9 @@ Scene getTestScene()
     loc += loadBuffer(&lightSourceBuffer[loc], (float*)&lightA, sizeof(LightSource));
     loc += loadBuffer(&lightSourceBuffer[loc], (float*)&lightB, sizeof(LightSource));
 
-    geometryTypesBuffer[0] = GEOMETRY_TYPE_SHERE;
-    geometryTypesBuffer[1] = GEOMETRY_TYPE_SHERE;
-    geometryTypesBuffer[2] = GEOMETRY_TYPE_SHERE;
+    geometryTypesBuffer[0] = GEOMETRY_TYPE_SPHERE;
+    geometryTypesBuffer[1] = GEOMETRY_TYPE_SPHERE;
+    geometryTypesBuffer[2] = GEOMETRY_TYPE_SPHERE;
 
     // Loading Geometry Colors
     loc = 0;

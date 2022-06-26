@@ -3,7 +3,8 @@
 #include <string.h>
 
 #define LIGHT_TYPE_POINT 1.0
-#define GEOMETRY_TYPE_SHERE 1.0
+#define GEOMETRY_TYPE_SPHERE 1
+#define GEOMETRY_TYPE_TRIANGLE 2
 
 typedef struct Observer
 {
@@ -65,13 +66,6 @@ typedef struct LightSource
     float b;
     float attenuation;
 } LightSource;
-
-// Depreciado
-typedef struct GeometryHeader
-{
-    float type;
-    float number;
-} GeometryHeader;
 
 typedef struct GeometryColor
 {

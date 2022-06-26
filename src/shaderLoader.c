@@ -7,7 +7,7 @@ char* readShaderFile(char* path)
     fseek(file, 0, SEEK_END);
     int size = ftell(file);
 
-    char* shaderCode = (char*) malloc(sizeof(char)*size);
+    char* shaderCode = (char*) malloc(sizeof(char)*size+1);
 
     fseek(file, 0, SEEK_SET);
     fread(shaderCode, sizeof(char), size, file);

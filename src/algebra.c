@@ -69,6 +69,29 @@ vec3 getScreenPoint(vec3 origin, vec3 center, vec3 horizontal, vec3 vertical, fl
     return addVec3(mulConstVec3(1/distance, center), addVec3(mulConstVec3(dh, horizontal), mulConstVec3(dv, vertical)));
 }
 
+float normalize(float x, float size)
+{
+    return x/size;
+}
+
+float* getPixelVertexCoordinates(float* vertices, unsigned int width, unsigned int height)
+{
+    vertices = (float*)malloc(sizeof(float)*height*width*3);
+    int pos = 0;
+    for (int h = (int)-(height)/2; h < (int)(height)/2; h++)
+    {
+        for(int w = (int)-(width)/2; w < (int)(width)/2; w++)
+        {
+            vertices[pos    ] = ((float)w)/(width/2);
+            vertices[pos + 1] = ((float)h)/(height/2);
+            vertices[pos + 2] = 0;
+            pos += 3;
+        }
+    }
+
+    return vertices;
+};
+
 float* getPixelDislocations(unsigned int width, unsigned int height)
 {
     float* dislocations = (float*)malloc(sizeof(float)*2*width*height);
@@ -84,30 +107,4 @@ float* getPixelDislocations(unsigned int width, unsigned int height)
     }
 
     return dislocations;
-}
-
-void buildRayDirections(vec3* pixels, unsigned int width, unsigned int height, vec3 origin, vec3 center, vec3 horizontal, vec3 vertical, float dh, float dv, float distance)
-{
-    vec3 pixelStart = getScreenPoint(origin, center, horizontal, vertical, 0.5*(1 - (float)width)*dh, 0.5*(1 - (float)height)*dv, distance);
-    
-    int lineJump = 0;
-    for(int i = 0; i < height; i++)
-    {
-        lineJump = i*width;
-        for(int j = 0; j < width; j++)
-        {
-            pixels[j + lineJump] = normalizeVec3(addVec3(mulConstVec3(i*dv, vertical) , addVec3(mulConstVec3(j*dh, horizontal), pixelStart)));
-        }
-    }
-
-    return;
-}
-
-void getRayDirections(vec3* pixels, unsigned int width, unsigned int height, vec3 origin, vec3 direction, float dh, float dv, float distance)
-{
-    vec3 P = getScreenCenterVersor(origin, direction);
-    vec3 H = getScreenHorizontalVersor(P);
-    vec3 V = getScreenVerticalVersor(P, H);
-    buildRayDirections(pixels, width, height, origin, P, H, V, dh, dv, distance);
-    return;
 }

@@ -19,5 +19,3 @@ typedef struct openGlEnv
 } openGlEnv;
 
 int mainRender(Scene scene);
-
-void algebraTest();

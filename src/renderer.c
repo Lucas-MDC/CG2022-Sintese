@@ -1,9 +1,6 @@
 #include "renderer.h"
 
-float normalize(float x, float size)
-{
-    return x/size;
-}
+
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
@@ -45,46 +42,6 @@ void render(openGlEnv* env, unsigned int shaderProgram, unsigned int* VAO)
 }
 */
 
-float* loadVertexBuffer(unsigned int width, unsigned int height)
-{
-    float* vertices = (float*)malloc(sizeof(float)*height*width*6);
-
-    int pos = 0;
-    for (int h = (int)-(height)/2; h < (int)(height)/2; h++)
-    {
-        for(int w = (int)-(width)/2; w < (int)(width)/2; w++)
-        {
-            vertices[pos    ] = normalize(w, width/2);
-            vertices[pos + 1] = normalize(h, height/2);
-            vertices[pos + 2] = 0;
-            vertices[pos + 3] = normalize(w, width/2);
-            vertices[pos + 4] = normalize(h, height/2);
-            vertices[pos + 5] = ((float)(rand() % 1000))/1000;
-            pos += 6;
-        }
-    }
-
-    return vertices;
-};
-
-float* getPixelVertexCoordinates(float* vertices, unsigned int width, unsigned int height)
-{
-    vertices = (float*)malloc(sizeof(float)*height*width*3);
-    int pos = 0;
-    for (int h = (int)-(height)/2; h < (int)(height)/2; h++)
-    {
-        for(int w = (int)-(width)/2; w < (int)(width)/2; w++)
-        {
-            vertices[pos    ] = normalize(w, width/2);
-            vertices[pos + 1] = normalize(h, height/2);
-            vertices[pos + 2] = 0;
-            pos += 3;
-        }
-    }
-
-    return vertices;
-};
-
 unsigned int getShaderProgram(Scene scene)
 {
     unsigned int vertexShader   = getSceneVertexShader("./vertex.glsl", scene);
@@ -105,18 +62,8 @@ int mainRender(Scene scene)
     openGlEnv env              = envInitialize(scene.observer.width, scene.observer.height);
     unsigned int shaderProgram = getShaderProgram(scene);
 
-    // Geometry data
-    float dh       = 0.001;
-    float dv       = 0.001;
-    float distance = 1;
-
-    vec3 origin    = (vec3){-5, 0, 0};
-    vec3 direction = (vec3){ 5, 0, 0};
-
-    float* dislocations = getPixelDislocations(scene.observer.width, scene.observer.height);
-
+    float* dislocations           = getPixelDislocations(scene.observer.width, scene.observer.height);
     float* pixelVertexCoordinates = getPixelVertexCoordinates(pixelVertexCoordinates, env.width, env.height);
-    //vec3*  rayDirections          = malloc(sizeof(vec3)*env.width*env.height);
 
     unsigned int vertexDataSize = sizeof(float)*env.width*env.height*5;
     float*       vertexData     = malloc(vertexDataSize);
@@ -149,43 +96,8 @@ int mainRender(Scene scene)
     float angle = 0.0;
     while(!glfwWindowShouldClose(env.window))
     {
-        /*
-        angle += 0.1;
-
-        if(angle >= 3.1415*2.0)
-            angle = 0.0;
-
-        origin    = (vec3){5*cos(angle), 5*sin(angle), 0};
-        direction = (vec3){geometry[1] - origin.x, geometry[2] - origin.y, geometry[3] - origin.z};
-        */
-
-        /*
-        // Needs urgents optimization
-        // May be moved to the shader in a pixel by pixel basis
-        // Send P, H, V, dh, dv and let each pixel get is ray direction
-        getRayDirections(rayDirections, env.width, env.height, origin, direction, dh, dv, distance);
-
-        // Escrevendo info de cada raio de cada pixel no buffer
-        pos = 3;
-        for(int i = 0; i < env.width*env.height; i++)
-        {
-            vertexData[pos    ] = rayDirections[i].x;
-            vertexData[pos + 1] = rayDirections[i].y;
-            vertexData[pos + 2] = rayDirections[i].z;
-            pos +=6;
-        }
-        */
-
         glBindBuffer(GL_ARRAY_BUFFER, VBO);
         glBufferData(GL_ARRAY_BUFFER, vertexDataSize, vertexData, GL_STATIC_DRAW);
-
-        /*
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
-        glEnableVertexAttribArray(0);
-
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3* sizeof(float)));
-        glEnableVertexAttribArray(1);
-        */
 
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
         glEnableVertexAttribArray(0);
@@ -234,7 +146,6 @@ int mainRender(Scene scene)
     }
 
     free((void*)dislocations);
-    //free((void*)rayDirections);
     free((void*)pixelVertexCoordinates);
     free((void*)vertexData);
     glDeleteVertexArrays(1, &VAO);
@@ -243,75 +154,4 @@ int mainRender(Scene scene)
     glfwTerminate();
 
     return 0;
-}
-
-void algebraTest()
-{
-    int width  = 3;
-    int height = 5;
-    float dh   = 1;
-    float dv   = 1;
-    float distance = 10;
-
-    vec3 origin    = (vec3){-5, 0, 0};
-    vec3 direction = (vec3){ 5, 0, 0};
-    printf("%f, %f, %f\n", ((float*)&origin)[0], ((float*)&origin)[1], ((float*)&origin)[2]);
-
-    vec3 a = (vec3){1.0, 2.0, 3.0};
-    vec3 b = (vec3){2.0, 3.0, 4.0};
-    vec3 c = (vec3){3.0, 4.0, 0};
-
-    // Operacoes basicas
-    printf("%s\n", "addCoonstVec3(1, a):");
-    printVec3(addConstVec3(1, a));
-
-    printf("%s\n", "mulCoonstVec3(1, a):");
-    printVec3(mulConstVec3(2, a));
-
-    printf("%s\n", "addVec3(a, b):");
-    printVec3(addVec3(a, b));
-
-    printf("%s\n", "subVec3(a, b):");
-    printVec3(subVec3(a, b));
-
-    printf("%s\n", "euclidianVec3(a, b):");
-    printf("%f\n", euclidianVec3(a, b));
-
-    printf("%s\n", "normVec3(c):");
-    printf("%f\n", normVec3(c));
-
-    printf("%s\n", "normalizeVec3(c):");
-    printVec3(normalizeVec3(c));
-
-    printf("%s\n", "crossVec3(a, b):");
-    printVec3(crossVec3(a, b));
-
-    vec3 P = getScreenCenterVersor(origin, direction);
-    printf("%s\n", "getScreenCenterVersor(origin, direction):");
-    printVec3(P);
-
-    vec3 H = getScreenHorizontalVersor(P);
-    printf("%s\n", "getScreenHorizontalVersor(P):");
-    printVec3(H);
-
-    vec3 V = getScreenVerticalVersor(P, H);
-    printf("%s\n", "getScreenVerticalVersor(P, H):");
-    printVec3(V);
-
-    printf("%s\n", "getScreenPoint(origin, P, H, V, dh, dv, distance):");
-    printVec3(getScreenPoint(origin, P, H, V, dh, dv, distance));
-
-    vec3* pixels = malloc(sizeof(vec3)*width*height);
-
-    printf("%s\n", "buildPixelDirections(width, height, origin, P, H, V, dh, dv, distance):");
-    //buildRayDirections(pixels, width, height, origin, P, H, V, dh, dv, distance);
-    getRayDirections(pixels, width, height, origin, direction, dh, dv, distance);
-    for(int i = 0; i < width*height; i++)
-    {
-        printVec3(pixels[i]);
-    }
-
-    free(pixels);
-
-    return;
 }

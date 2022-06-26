@@ -35,8 +35,6 @@ vec3 getScreenVerticalVersor(vec3 centerVer, vec3 horizontalVer);
 
 vec3 getScreenPoint(vec3 origin, vec3 center, vec3 horizontal, vec3 vertical, float dh, float dv, float distance);
 
+float* getPixelVertexCoordinates(float* vertices, unsigned int width, unsigned int height);
+
 float* getPixelDislocations(unsigned int width, unsigned int height);
-
-void buildRayDirections(vec3* pixels, unsigned int width, unsigned int height, vec3 origin, vec3 center, vec3 horizontal, vec3 vertical, float dh, float dv, float distance);
-
-void getRayDirections(vec3* pixels, unsigned int width, unsigned int height, vec3 origin, vec3 center, float dh, float dv, float distance);
