@@ -8,14 +8,4 @@
 #include "algebra.h"
 #include "scene.h"
 
-#define true  1
-#define false 0
-
-typedef struct openGlEnv
-{
-    GLFWwindow* window;
-    unsigned int width;
-    unsigned int height;
-} openGlEnv;
-
 int mainRender(Scene scene);

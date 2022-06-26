@@ -40,6 +40,9 @@ typedef struct ObserverProcessed
     float dh;
     float dv;
     float distance;
+    float xObserved;
+    float yObserved;
+    float zObserved;
 } ObserverProcessed;
 
 typedef struct RayInfo

@@ -32,7 +32,10 @@ ObserverProcessed getObserverProcessed(Observer obs)
         obs.height,
         obs.dh,
         obs.dv,
-        obs.distance
+        obs.distance,
+        obs.xObserved,
+        obs.yObserved,
+        obs.zObserved
     };
 }
 
@@ -47,22 +50,22 @@ Scene getTestScene()
     };
     ObserverProcessed obsp = getObserverProcessed(obs);
 
-    AmbientLight ambientLight = {1.0, 1.0, 1.0};
+    AmbientLight ambientLight = {0.5, 0.5, 0.5};
 
     LightSource lightA = 
     {
         LIGHT_TYPE_POINT, 
         5.0, 0.0, 10.0, // x, y, z cooridantes
         1.0, 1.0, 1.0 , // r, g, b colors
-        1              // attenuation factor
+        1               // attenuation factor
     };
 
     LightSource lightB = 
     {
         LIGHT_TYPE_POINT,
         5.0, 5.0, 0.0  , // x, y, z cooridantes
-        1.0, 1.0 , 1.0  , // r, g, b colors
-        1                 // attenuation factor
+        1.0, 1.0 , 1.0 , // r, g, b colors
+        1                // attenuation factor
     };
 
     GeometryColor sphereColorA =
