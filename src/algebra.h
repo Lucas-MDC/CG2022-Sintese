@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 #include <math.h>
 
 typedef struct vec3
@@ -8,6 +9,13 @@ typedef struct vec3
     float y;
     float z;
 } vec3;
+
+typedef struct Matrix
+{
+    float** data;
+    int     rowNum;
+    int     colNum;
+} Matrix;
 
 void printVec3(vec3 a);
 
@@ -26,6 +34,22 @@ float normVec3(vec3 a);
 vec3 normalizeVec3(vec3 a);
 
 vec3 crossVec3(vec3 a, vec3 b);
+
+Matrix newMatrix(int rowNum, int colNum);
+
+void freeMatrix(Matrix a);
+
+Matrix yawRotation(Matrix a, float angle);
+
+Matrix pitchRotation(Matrix a, float angle);
+
+Matrix rollRotation(Matrix a, float angle);
+
+Matrix arbitraryAxisRotation(Matrix a, int ax, int ay, int az, float angle);
+
+int matricesAreMutipliable(Matrix a, Matrix b);
+
+Matrix mulMatrix(Matrix a, Matrix b);
 
 vec3 getScreenCenterVersor(vec3 origin, vec3 direction);
 

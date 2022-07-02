@@ -31,12 +31,15 @@ GLFWwindow* envInitialize(unsigned int width, unsigned int height)
 
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
     if (glfwRawMouseMotionSupported())
         glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
 
     return window;
 }
 
+// Mano... olha isso.
 void moveObserverPosition(Scene* scene, float dc, float dh, float dv)
 {
     scene->observer.xOrigin += scene->observer.xCenterVersor*dc;
@@ -54,47 +57,72 @@ void moveObserverPosition(Scene* scene, float dc, float dh, float dv)
     scene->observer.xObserved = scene->observer.xOrigin + scene->observer.xCenterVersor*1;
     scene->observer.yObserved = scene->observer.yOrigin + scene->observer.yCenterVersor*1;
     scene->observer.zObserved = scene->observer.zOrigin + scene->observer.zCenterVersor*1;
-
-    /*
-    scene->observer.xOrigin += scene->observer.xHorizontalVersor*dh;
-    scene->observer.yOrigin += scene->observer.yHorizontalVersor*dh;
-    scene->observer.zOrigin += scene->observer.zHorizontalVersor*dh;
-
-    scene->observer.xOrigin += scene->observer.xVerticalVersor*dv;
-    scene->observer.yOrigin += scene->observer.yVerticalVersor*dv;
-    scene->observer.zOrigin += scene->observer.zVerticalVersor*dv;
-    */
-
-    vec3 centerVersor     = getScreenCenterVersor((vec3){scene->observer.xOrigin, scene->observer.yOrigin, scene->observer.zOrigin}, (vec3){scene->observer.xObserved, scene->observer.yObserved, scene->observer.zObserved});
-    vec3 horizontalVersor = getScreenHorizontalVersor(centerVersor);
-    vec3 verticalVersor   = getScreenVerticalVersor(centerVersor, horizontalVersor);
-
-    scene->observer.xCenterVersor = centerVersor.x;
-    scene->observer.yCenterVersor = centerVersor.y;
-    scene->observer.zCenterVersor = centerVersor.z;
-    scene->observer.xHorizontalVersor = horizontalVersor.x;
-    scene->observer.yHorizontalVersor = horizontalVersor.y;
-    scene->observer.zHorizontalVersor = horizontalVersor.z;
-    scene->observer.xVerticalVersor   = verticalVersor.x;
-    scene->observer.yVerticalVersor   = verticalVersor.y;
-    scene->observer.zVerticalVersor   = verticalVersor.z;
 }
+
 
 void movementHandler(GLFWwindow* window, Scene* scene)
 {
+    float d = 0.1;
+    if(glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+        d = 0.5;
+
     if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        moveObserverPosition(scene, 0.1, 0.0, 0.0);   
+        moveObserverPosition(scene, d, 0.0, 0.0);   
     if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)    
-        moveObserverPosition(scene, -0.1, 0.0, 0.0);  
+        moveObserverPosition(scene, -d, 0.0, 0.0);  
     if(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)    
-        moveObserverPosition(scene, 0.0, -0.1, 0.0);  
+        moveObserverPosition(scene, 0.0, -d, 0.0);  
     if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)    
-        moveObserverPosition(scene, 0.0, 0.1, 0.0);  
+        moveObserverPosition(scene, 0.0, d, 0.0);  
+    if(glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)    
+        moveObserverPosition(scene, 0.0, 0.0, d);  
+    if(glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)    
+        moveObserverPosition(scene, 0.0, 0.0, -d);
+}
+
+static double mouseXpos;
+static double mouseYpos;
+
+void observedHandler(GLFWwindow* window, Scene* scene)
+{
+    double xpos, ypos;
+    glfwGetCursorPos(window, &xpos, &ypos);
+
+    double dx = xpos - mouseXpos;
+    double dy = ypos - mouseYpos;
+
+    if(dx == 0 && dy == 0)
+        return;
+
+    mouseXpos = xpos;
+    mouseYpos = ypos; 
+
+    double yawAngle   = dx*0.005;
+    double pitchAngle = dy*0.005;
+
+    Matrix observed = newMatrix(3, 1);
+    observed.data[0][0] = scene->observer.xObserved - scene->observer.xOrigin;
+    observed.data[1][0] = scene->observer.yObserved - scene->observer.yOrigin;
+    observed.data[2][0] = scene->observer.zObserved - scene->observer.zOrigin;
+
+    Matrix a = yawRotation(observed, yawAngle);
+
+    scene->observer.xObserved = a.data[0][0] + scene->observer.xOrigin; 
+    scene->observer.yObserved = a.data[1][0] + scene->observer.yOrigin; 
+    scene->observer.zObserved = a.data[2][0] + scene->observer.zOrigin; 
+
+    freeMatrix(a);   
+    freeMatrix(observed);
+    updateSceneVersors(scene);
 }
 
 void inputHandler(GLFWwindow* window, Scene* scene)
 {
+    if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
+
     movementHandler(window, scene);
+    //observedHandler(window, scene);
 
     int width;
     int height;

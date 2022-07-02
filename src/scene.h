@@ -111,4 +111,6 @@ unsigned int loadBuffer(float* buffer, void* object, unsigned int size);
 
 ObserverProcessed getObserverProcessed(Observer obs);
 
+void updateSceneVersors(Scene* scene);
+
 Scene getTestScene();

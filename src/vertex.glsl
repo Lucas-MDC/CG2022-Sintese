@@ -305,7 +305,7 @@ vec3 sphereNormal(vec3 point, struct GeometrySphere sphere)
 /* * * * * * * * * * * * * * * * * * * * * * * * * * Illumination Models Functions * * * * * * * * * * * * * * * * * * * * * * * * * */
 float phongIlluminationChannel(vec2 light, vec2 difC, vec2 speC, float normA, float obsA, float specPer)
 {
-    return light[1]*light[0]*(difC[1]*difC[0]*cos(abs(normA)) + speC[1]*speC[0]*pow(abs(cos(obsA)), specPer));
+    return light[1]*light[0]*(difC[1]*difC[0]*cos(normA) + speC[1]*speC[0]*pow(abs(cos(obsA)), specPer));
 }
 
 vec4 phongIllumination(vec3 lightC, float lightAtt, vec4 difC, vec4 speC, float normA, float obsA, float specPer)
@@ -395,12 +395,139 @@ RayCasted rayCast(vec3 origin, vec3 direction, int isShadowRay)
     return raycasted;
 }
 
-vec4 shadowRayCastColor(vec3 intersectionPoint, int objectID)
+vec4 shadowRayCastColor(vec3 intersectionPoint, vec3  intersectionDirection, vec3 normal, int objectID)
 {
-    return vec4(0, 0, 0, 1);
+    vec4 rgb = vec4(0, 0, 0, 1);
+
+    for(int lightID = 0; lightID < LIGHT_SOUCES_NUMBER; lightID++)
+    {
+        vec3 lightDirection       = getLightDirection(intersectionPoint, getLightSourcePosition(lightID));
+        RayCasted shadowRaycasted = rayCast(intersectionPoint, lightDirection, IS_SHADOW_RAY);
+
+        // Continue, since the light source is not ocluded
+        if(hasIntersected(shadowRaycasted.intersection))
+            continue;
+
+        vec3 reflectedRay = reflect(lightDirection, normal);
+
+        rgb += phongIllumination
+              ( 
+                getLightSourceColor(lightID),
+                getLightSourceAttenuation(lightID), 
+                getGeometryDiffuseColor(objectID),
+                getGeometrySpecularColor(objectID),
+                angleBetweenVec3(normal, lightDirection), 
+                angleBetweenVec3(reflectedRay, intersectionDirection),
+                getGeometryShininess(objectID)
+              );
+    }
+
+    return rgb;
 }
 
-vec4 rayTrace(vec3 origin, vec3 direction)
+#define MAX_RAYTRACE_DEPTH 5
+// https://stackoverflow.com/questions/35909453/c-c-power-of-two-macro
+// #define pwrtwo(x) (1 << (x))
+// Ray rayTraces[pwrtwo(MAX_RAYTRACE_DEPTH);
+
+struct Ray
+{
+    int  searchStatus;
+    int  rayIndex;
+    int  childSign;
+    vec4 color;
+    vec4 leftChildColor;
+    vec4 rightChildColor;   
+};
+
+struct RayStack
+{
+    Ray stack[MAX_RAYTRACE_DEPTH];
+    int size;
+    int maxSize;
+};
+
+void rayStackPush(RayStack rayStack, Ray ray)
+{
+    if(rayStack.size < rayStack.maxSize)
+    {
+        rayStack.stack[rayStack.size] = ray;
+        rayStack.size += 1;
+    }
+}
+
+void rayStackPop(RayStack rayStack)
+{
+    if(rayStack.size > 0)
+        rayStack.size -= 0;
+}
+
+/*
+Ray treeNodeLeftChild(RayStack rayStack, int node)
+{
+    return rayStack.stack[2*node];
+}
+
+Ray treeNodeRightChild(RayStack rayStack, int node)
+{
+    return rayStack.stack[2*node+1];
+}
+*/
+
+struct Witted
+{
+    RayCasted raycasted          ;
+    vec3      reflectionDirection;
+    vec3      refractionDirection;
+    vec3      localColor         ;
+};
+
+Witted witted(vec3 origin, vec3 direction)
+{
+    RayCasted raycasted = rayCast(origin, direction, IS_NOT_SHADOW_RAY);
+    
+    if(hasNotIntersected(raycasted.intersection))
+        return Witted(raycasted, raycasted.intersection.point, raycasted.intersection.point, vec3(0.0, 0.0, 0.0));
+
+    vec4  objectDiffuseColor  = getGeometryDiffuseColor(raycasted.objectID);
+    vec4  objectSpecularColor = getGeometrySpecularColor(raycasted.objectID);
+    float objectTransparency  = getGeometryTransparency(raycasted.objectID);
+    float objectShininess     = getGeometryShininess(raycasted.objectID);
+
+    // heuristic err modification
+    float delta = 0.0001*sqrt(distance(origin, raycasted.intersection.point));
+    vec3  intersectionDirection = getIntersectDirection(origin, raycasted.intersection.point);
+    vec3  intersectionPointMod  = raycasted.intersection.point + delta*intersectionDirection;
+
+    vec4  rgb = shadowRayCastColor(intersectionPointMod, intersectionDirection, raycasted.intersection.normal, raycasted.objectID);
+
+    vec3 reflectedDirection = reflect(direction, raycasted.intersection.normal);
+    vec3 refractedDirection = refract(direction, raycasted.intersection.normal, 0.1);
+
+    float objectAmbConstant = getGeometryAmbientConstant(raycasted.objectID);
+    rgb += phongIlluminationAmbientLight(ambientLight, objectAmbConstant, objectDiffuseColor)*2;
+
+    return Witted(raycasted, reflectedDirection, refractedDirection, min(vec3(rgb.x, rgb.y, rgb.z), vec3(1.0, 1.0, 1.0)));
+}
+
+
+RayStack rayStack;
+
+vec4 rayTrace(RayStack rayStack, vec3 origin, vec3 direction)
+{
+    rayStack.size    = 0;
+    rayStack.maxSize = MAX_RAYTRACE_DEPTH;
+
+
+    while(true)
+    {
+
+    }
+
+    return vec4(0, 0, 0, 0);
+}
+
+vec4 rayTraceOld(vec3 origin, vec3 direction)
 {
     RayCasted raycasted = rayCast(origin, direction, IS_NOT_SHADOW_RAY);
     
@@ -412,34 +539,11 @@ vec4 rayTrace(vec3 origin, vec3 direction)
     float objectTransparency  = getGeometryTransparency(raycasted.objectID);
     float objectShininess     = getGeometryShininess(raycasted.objectID);
 
-    vec4 rgb = vec4(0, 0, 0, 1);
-
-    float delta = 0.001;
+    // heuristic err modification
+    float delta = 0.0001*sqrt(distance(origin, raycasted.intersection.point));
     vec3  intersectionDirection = getIntersectDirection(origin, raycasted.intersection.point);
     vec3  intersectionPointMod  = raycasted.intersection.point + delta*intersectionDirection;
-
-    for(int lightID = 0; lightID < LIGHT_SOUCES_NUMBER; lightID++)
-    {
-        vec3 lightDirection       = getLightDirection(raycasted.intersection.point, getLightSourcePosition(lightID));
-        RayCasted shadowRaycasted = rayCast(intersectionPointMod, lightDirection, IS_SHADOW_RAY);
-
-        // Continue, since the light source is not ocluded
-        if(hasIntersected(shadowRaycasted.intersection))
-            continue;
-
-        vec3  reflectedRay  = reflect(lightDirection, raycasted.intersection.normal);
-
-        rgb += phongIllumination
-              ( 
-                getLightSourceColor(lightID),
-                getLightSourceAttenuation(lightID), 
-                getGeometryDiffuseColor(raycasted.objectID),
-                getGeometrySpecularColor(raycasted.objectID),
-                angleBetweenVec3(raycasted.intersection.normal, lightDirection), 
-                angleBetweenVec3(reflectedRay, intersectionDirection),
-                getGeometryShininess(raycasted.objectID)
-              );
-    }
+    vec4  rgb = shadowRayCastColor(intersectionPointMod, intersectionDirection, raycasted.intersection.normal, raycasted.objectID);
 
     float objectAmbConstant = getGeometryAmbientConstant(raycasted.objectID);
     rgb += phongIlluminationAmbientLight(ambientLight, objectAmbConstant, objectDiffuseColor)*2;
@@ -450,5 +554,5 @@ vec4 rayTrace(vec3 origin, vec3 direction)
 void main()
 {
     gl_Position = vec4(pixelPos.x, pixelPos.y, 0, 1.0);
-    pixelNewColor = rayTrace(getOrigin(), getRayDirection());
+    pixelNewColor = rayTraceOld(getOrigin(), getRayDirection());
 }

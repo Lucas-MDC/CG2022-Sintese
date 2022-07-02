@@ -39,6 +39,23 @@ ObserverProcessed getObserverProcessed(Observer obs)
     };
 }
 
+void updateSceneVersors(Scene* scene)
+{
+    vec3 centerVersor     = getScreenCenterVersor((vec3){scene->observer.xOrigin, scene->observer.yOrigin, scene->observer.zOrigin}, (vec3){scene->observer.xObserved, scene->observer.yObserved, scene->observer.zObserved});
+    vec3 horizontalVersor = getScreenHorizontalVersor(centerVersor);
+    vec3 verticalVersor   = getScreenVerticalVersor(centerVersor, horizontalVersor);
+
+    scene->observer.xCenterVersor     = centerVersor.x;
+    scene->observer.yCenterVersor     = centerVersor.y;
+    scene->observer.zCenterVersor     = centerVersor.z;
+    scene->observer.xHorizontalVersor = horizontalVersor.x;
+    scene->observer.yHorizontalVersor = horizontalVersor.y;
+    scene->observer.zHorizontalVersor = horizontalVersor.z;
+    scene->observer.xVerticalVersor   = verticalVersor.x;
+    scene->observer.yVerticalVersor   = verticalVersor.y;
+    scene->observer.zVerticalVersor   = verticalVersor.z;
+}
+
 Scene getTestScene()
 {
     Observer obs = 
@@ -63,7 +80,7 @@ Scene getTestScene()
     LightSource lightB = 
     {
         LIGHT_TYPE_POINT,
-        5.0, 5.0, 0.0  , // x, y, z cooridantes
+        5.0, 20.0, 0.0  , // x, y, z cooridantes
         1.0, 1.0 , 1.0 , // r, g, b colors
         1                // attenuation factor
     };
@@ -93,7 +110,7 @@ Scene getTestScene()
     };
 
     GeometrySphere sphereA = {5.0,  0.0, 0.0, 1.0};
-    GeometrySphere sphereB = {-1.0,  -2.0, 0.0, 0.5};
+    GeometrySphere sphereB = {-1.0, -2.0, 0.0, 0.5};
     GeometrySphere sphereC = {5.0, -4.0, 0.0, 2.0};
 
     int           lightSourceNumber       = 2;
