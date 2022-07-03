@@ -88,38 +88,38 @@ Scene getTestScene()
     GeometryColor sphereColorA =
     {
         0.1,                 // ambient constant
-        0.8, 0.0, 0.0, 0.45, // r, g, b diffuse colors, diffuse constant
+        1.0, 0.0, 0.0, 0.45, // r, g, b diffuse colors, diffuse constant
         1.0, 0.8, 0.8, 0.45, // r, g, b specullar colors, specular constant
-        0.0, 10.0, 0.1       // transparency, shininess and refraction constant
+        0.0, 10.0, 0.0       // transparency, shininess and refraction constant
     };
 
     GeometryColor sphereColorB =
     {
         0.1,                 // ambient constant
-        0.0, 0.8, 0.0, 0.45, // r, g, b diffuse colors, diffuse constant
+        0.0, 1.0, 0.0, 0.45, // r, g, b diffuse colors, diffuse constant
         0.8, 1.0, 0.8, 0.45, // r, g, b specullar colors, specular constant
-        0.0, 15.0, 0.1       // transparency, shininess and refraction constant
+        0.0, 15.0, 0.10      // transparency, shininess and refraction constant
     };
 
     GeometryColor sphereColorC =
     {
         0.1,                 // ambient constant
-        1.0, 1.0, 1.0, 0.25, // r, g, b diffuse colors, diffuse constant
-        1.0, 1.0, 1.0, 0.65, // r, g, b specullar colors, specular constant
-        0.0, 20.0, 0.1      // transparency, shininess and refraction constant
+        1.0, 1.0, 1.0, 0.45, // r, g, b diffuse colors, diffuse constant
+        1.0, 1.0, 1.0, 0.45, // r, g, b specullar colors, specular constant
+        0.8, 100.0, 1.2      // transparency, shininess and refraction constant
     };
 
     GeometrySphere sphereA = {5.0,  0.0, 0.0, 1.0};
     GeometrySphere sphereB = {-1.0, -2.0, 0.0, 0.5};
     GeometrySphere sphereC = {5.0, -4.0, 0.0, 2.0};
 
-    int           lightSourceNumber       = 2;
-    float*        lightSourceBuffer       = (float*)calloc(1, sizeof(LightSource)*lightSourceNumber);
-    int           geometryShapesNumber    = 3;
-    int*          geometryShapesLocations = (int*)calloc(1, sizeof(unsigned int)*geometryShapesNumber);
-    int*          geometryTypesBuffer     = (int*)calloc(1, sizeof(float)*geometryShapesNumber);
-    float*        geometryColorsBuffer    = (float*)calloc(1, sizeof(GeometryColor)*geometryShapesNumber);
-    float*        geometryShapesBuffer    = (float*)calloc(1, sizeof(GeometrySphere)*geometryShapesNumber);
+    int    lightSourceNumber       = 2;
+    float* lightSourceBuffer       = (float*)calloc(1, sizeof(LightSource)*lightSourceNumber);
+    int    geometryShapesNumber    = 3;
+    int*   geometryShapesLocations = (int*)calloc(1, sizeof(unsigned int)*geometryShapesNumber);
+    int*   geometryTypesBuffer     = (int*)calloc(1, sizeof(float)*geometryShapesNumber);
+    float* geometryColorsBuffer    = (float*)calloc(1, sizeof(GeometryColor)*geometryShapesNumber);
+    float* geometryShapesBuffer    = (float*)calloc(1, sizeof(GeometrySphere)*geometryShapesNumber);
 
     Scene scene = 
     {
