@@ -6,7 +6,7 @@ layout (location = 1) in vec2 pixelDislocations;
 
 #define OBSERVER_STRUCT_SIZE 17
 #define LIGHT_SOURCE_STRUCT_SIZE 8
-#define GEOMETRY_COLOR_STRUCT_SIZE 11
+#define GEOMETRY_COLOR_STRUCT_SIZE 12
 
 // DONT TOUCH THESE, THE PRECISE LINES ARE USED TO DYNAMICALLY SET THE SIZES IN THE CPU CODE
 #define LIGHT_SOURCES_SIZE 00000000
@@ -73,6 +73,7 @@ struct GeometryColor
     float specularConstant;
     float transparency;
     float shininess;
+    float refractionConstant;
 };
 
 struct GeometrySphere
@@ -138,8 +139,6 @@ struct GeometrySphere makeGeometrySphere(int shapeIndex)
 }
 
 /*
-    shapeIndex = which shape is it
-*/
 struct GeometryColor makeGeometryColor(int shapeIndex)
 {
     int pos = shapeIndex*GEOMETRY_COLOR_STRUCT_SIZE;
@@ -150,6 +149,7 @@ struct GeometryColor makeGeometryColor(int shapeIndex)
                             shapeColors[pos + 9], shapeColors[pos + 10]
                         );
 }
+*/
 
 float getGeometryAmbientConstant(int shapeIndex)
 {
@@ -176,6 +176,11 @@ float getGeometryTransparency(int shapeIndex)
 float getGeometryShininess(int shapeIndex)
 {
     return shapeColors[shapeIndex*GEOMETRY_COLOR_STRUCT_SIZE + 10];
+}
+
+float getGeometryRefractionConstant(int shapeIndex)
+{
+    return shapeColors[shapeIndex*GEOMETRY_COLOR_STRUCT_SIZE + 11];
 }
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * Observer Struct Functions * * * * * * * * * * * * * * * * * * * * * * * * * */
@@ -428,54 +433,11 @@ vec4 shadowRayCastColor(vec3 intersectionPoint, vec3  intersectionDirection, vec
 #define MAX_RAYTRACE_DEPTH 5
 // https://stackoverflow.com/questions/35909453/c-c-power-of-two-macro
 // #define pwrtwo(x) (1 << (x))
-// Ray rayTraces[pwrtwo(MAX_RAYTRACE_DEPTH);
-
-struct Ray
-{
-    int  searchStatus;
-    int  rayIndex;
-    int  childSign;
-    vec4 color;
-    vec4 leftChildColor;
-    vec4 rightChildColor;   
-};
-
-struct RayStack
-{
-    Ray stack[MAX_RAYTRACE_DEPTH];
-    int size;
-    int maxSize;
-};
-
-void rayStackPush(RayStack rayStack, Ray ray)
-{
-    if(rayStack.size < rayStack.maxSize)
-    {
-        rayStack.stack[rayStack.size] = ray;
-        rayStack.size += 1;
-    }
-}
-
-void rayStackPop(RayStack rayStack)
-{
-    if(rayStack.size > 0)
-        rayStack.size -= 0;
-}
-
-/*
-Ray treeNodeLeftChild(RayStack rayStack, int node)
-{
-    return rayStack.stack[2*node];
-}
-
-Ray treeNodeRightChild(RayStack rayStack, int node)
-{
-    return rayStack.stack[2*node+1];
-}
-*/
 
 struct Witted
 {
+    vec3      origin             ;
+    vec3      direction          ;
     RayCasted raycasted          ;
     vec3      reflectionDirection;
     vec3      refractionDirection;
@@ -487,44 +449,189 @@ Witted witted(vec3 origin, vec3 direction)
     RayCasted raycasted = rayCast(origin, direction, IS_NOT_SHADOW_RAY);
     
     if(hasNotIntersected(raycasted.intersection))
-        return Witted(raycasted, raycasted.intersection.point, raycasted.intersection.point, vec3(0.0, 0.0, 0.0));
+        return Witted(origin, direction, raycasted, raycasted.intersection.point, raycasted.intersection.point, vec3(0.0, 0.0, 0.0));
 
     vec4  objectDiffuseColor  = getGeometryDiffuseColor(raycasted.objectID);
     vec4  objectSpecularColor = getGeometrySpecularColor(raycasted.objectID);
-    float objectTransparency  = getGeometryTransparency(raycasted.objectID);
+    //float objectTransparency  = getGeometryTransparency(raycasted.objectID);
     float objectShininess     = getGeometryShininess(raycasted.objectID);
 
     // heuristic err modification
     float delta = 0.0001*sqrt(distance(origin, raycasted.intersection.point));
     vec3  intersectionDirection = getIntersectDirection(origin, raycasted.intersection.point);
     vec3  intersectionPointMod  = raycasted.intersection.point + delta*intersectionDirection;
-
     vec4  rgb = shadowRayCastColor(intersectionPointMod, intersectionDirection, raycasted.intersection.normal, raycasted.objectID);
 
     vec3 reflectedDirection = reflect(direction, raycasted.intersection.normal);
-    vec3 refractedDirection = refract(direction, raycasted.intersection.normal, 0.1);
+    vec3 refractedDirection = refract(direction, raycasted.intersection.normal, getGeometryRefractionConstant(raycasted.objectID));
 
     float objectAmbConstant = getGeometryAmbientConstant(raycasted.objectID);
     rgb += phongIlluminationAmbientLight(ambientLight, objectAmbConstant, objectDiffuseColor)*2;
 
-    return Witted(raycasted, reflectedDirection, refractedDirection, min(vec3(rgb.x, rgb.y, rgb.z), vec3(1.0, 1.0, 1.0)));
+    // adjusting for err
+    raycasted.intersection.point = intersectionPointMod;
+
+    return Witted(origin, direction, raycasted, reflectedDirection, refractedDirection, min(vec3(rgb.x, rgb.y, rgb.z), vec3(1.0, 1.0, 1.0)));
 }
 
+#define SEARCH_STARTED  1
+#define SEARCH_LEFT     2
+#define SEARCH_RIGHT    3
+#define SEARCH_FINISHED 4
+
+#define CHILD_SIGN_ROOT  0
+#define CHILD_SIGN_LEFT  1
+#define CHILD_SIGN_RIGHT 2
+
+#define UNRESOLVED_COLOR vec3(0.0, 0.0, 0.0)
+
+struct Ray
+{
+    int    status;
+    int    childSign;
+    Witted witted;
+    vec3   leftChildColor;
+    vec3   rightChildColor;   
+};
+
+struct RayStack
+{
+    Ray stack[MAX_RAYTRACE_DEPTH];
+    int size;
+    int maxSize;
+};
 
 RayStack rayStack;
 
-vec4 rayTrace(RayStack rayStack, vec3 origin, vec3 direction)
+void rayStackPush(Ray ray)
+{
+    if(rayStack.size < rayStack.maxSize)
+    {
+        rayStack.stack[rayStack.size] = ray;
+        rayStack.size += 1;
+    }
+}
+
+void rayStackPop()
+{
+    if(rayStack.size > 0)
+        rayStack.size -= 1;
+}
+
+Ray rayStackPeekAt(int pos)
+{
+    if(rayStack.size > pos)
+        return rayStack.stack[pos];
+    else
+        return rayStack.stack[0];  
+}
+
+Ray rayStackPeek()
+{
+    return rayStackPeekAt(rayStack.size-1);
+}
+
+void rayStackSetStatus(int status)
+{
+    if(rayStack.size > 0)
+        rayStack.stack[rayStack.size-1].status = status;
+}
+
+void rayWriteColorParent(int childSign, vec3 resolvedColor)
+{
+    if(rayStack.size-2 >= 0)
+    {
+        if(childSign == CHILD_SIGN_LEFT)
+            rayStack.stack[rayStack.size-2].leftChildColor = resolvedColor;
+        else if(childSign == CHILD_SIGN_RIGHT)
+            rayStack.stack[rayStack.size-2].rightChildColor = resolvedColor;
+    }
+}
+
+vec3 rayTrace(vec3 origin, vec3 direction)
 {
     rayStack.size    = 0;
     rayStack.maxSize = MAX_RAYTRACE_DEPTH;
 
+    rayStackPush(Ray(SEARCH_LEFT, CHILD_SIGN_ROOT, witted(origin, direction), UNRESOLVED_COLOR, UNRESOLVED_COLOR));
 
-    while(true)
+    float safetyCounter = 100;
+    float debugColor = 0;
+
+    vec3 newOrigin;
+    vec3 newDirection;
+
+    vec3 rgb;
+
+    //if(hasNotIntersected(rayStackPeek().witted.raycasted.intersection))
+    //    return vec3(0.0, 0.0, 0.0); //debug
+
+    while(rayStack.size > 0 && safetyCounter > 0)
     {
+        Ray ray      = rayStackPeek();
+        int objectID = ray.witted.raycasted.objectID;
 
+        if(hasNotIntersected(ray.witted.raycasted.intersection))
+        {
+            rayStackSetStatus(SEARCH_FINISHED);
+            rayWriteColorParent(ray.childSign, UNRESOLVED_COLOR);
+            rayStackPop();
+            continue;
+        }
+
+        if(rayStack.size == rayStack.maxSize)
+            rayStackSetStatus(SEARCH_FINISHED);
+
+        if(ray.status == SEARCH_FINISHED)
+        {
+            // Blendcolors
+
+            rgb = ray.witted.localColor;
+
+            vec4 reflectionColor =
+            phongIllumination
+            ( 
+                ray.leftChildColor,
+                1.0,
+                getGeometryDiffuseColor(objectID),
+                getGeometrySpecularColor(objectID),
+                angleBetweenVec3(ray.witted.raycasted.intersection.normal, ray.witted.reflectionDirection), 
+                angleBetweenVec3(ray.witted.reflectionDirection, ray.witted.direction),
+                0
+            )*(1-getGeometryTransparency(objectID));
+
+            rgb += vec3(reflectionColor.x,  reflectionColor.y,  reflectionColor.z);
+
+            if(rayStack.size == 1)
+                break;
+
+            rayWriteColorParent(ray.childSign, rgb);
+            rayStackPop();
+        }
+        else if(ray.status == SEARCH_LEFT)
+        {
+            rayStackSetStatus(SEARCH_RIGHT);
+            newOrigin    = ray.witted.raycasted.intersection.point;
+            newDirection = ray.witted.reflectionDirection;
+            rayStackPush(Ray(SEARCH_LEFT, CHILD_SIGN_LEFT, witted(newOrigin, newDirection), UNRESOLVED_COLOR, UNRESOLVED_COLOR));
+        }
+        else if(ray.status == SEARCH_RIGHT)
+        {
+            rayStackSetStatus(SEARCH_FINISHED);
+
+            if(getGeometryTransparency(objectID) == 0.0)
+                continue;
+
+            newOrigin    = ray.witted.raycasted.intersection.point;
+            newDirection = ray.witted.refractionDirection;
+            rayStackPush(Ray(SEARCH_LEFT, CHILD_SIGN_RIGHT, witted(newOrigin, newDirection), UNRESOLVED_COLOR, UNRESOLVED_COLOR));
+        }
+        
+        safetyCounter--;
     }
 
-    return vec4(0, 0, 0, 0);
+    //return vec3(debugColor, 0, 0);
+    return rgb;
 }
 
 vec4 rayTraceOld(vec3 origin, vec3 direction)
@@ -554,5 +661,9 @@ vec4 rayTraceOld(vec3 origin, vec3 direction)
 void main()
 {
     gl_Position = vec4(pixelPos.x, pixelPos.y, 0, 1.0);
-    pixelNewColor = rayTraceOld(getOrigin(), getRayDirection());
+    vec3 rgb = rayTrace(getOrigin(), getRayDirection());
+
+    pixelNewColor = vec4(rgb.x, rgb.y, rgb.z, 1.0);
+
+    //pixelNewColor = rayTraceOld(getOrigin(), getRayDirection());
 }

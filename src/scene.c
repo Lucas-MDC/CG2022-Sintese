@@ -90,7 +90,7 @@ Scene getTestScene()
         0.1,                 // ambient constant
         0.8, 0.0, 0.0, 0.45, // r, g, b diffuse colors, diffuse constant
         1.0, 0.8, 0.8, 0.45, // r, g, b specullar colors, specular constant
-        0.0, 10.0            // transparency and shininess
+        0.0, 10.0, 0.1       // transparency, shininess and refraction constant
     };
 
     GeometryColor sphereColorB =
@@ -98,15 +98,15 @@ Scene getTestScene()
         0.1,                 // ambient constant
         0.0, 0.8, 0.0, 0.45, // r, g, b diffuse colors, diffuse constant
         0.8, 1.0, 0.8, 0.45, // r, g, b specullar colors, specular constant
-        0.0, 15.0            // transparency and shininess
+        0.0, 15.0, 0.1       // transparency, shininess and refraction constant
     };
 
     GeometryColor sphereColorC =
     {
         0.1,                 // ambient constant
-        0.0, 0.0, 0.8, 0.45, // r, g, b diffuse colors, diffuse constant
-        0.8, 0.8, 1.0, 0.45, // r, g, b specullar colors, specular constant
-        0.0, 20.0            // transparency and shininess
+        1.0, 1.0, 1.0, 0.25, // r, g, b diffuse colors, diffuse constant
+        1.0, 1.0, 1.0, 0.65, // r, g, b specullar colors, specular constant
+        0.0, 20.0, 0.1      // transparency, shininess and refraction constant
     };
 
     GeometrySphere sphereA = {5.0,  0.0, 0.0, 1.0};

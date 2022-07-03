@@ -83,6 +83,7 @@ typedef struct GeometryColor
     float specularConstant;
     float transparency;
     float shininess;
+    float refractionConstant;
 } GeometryColor;
 
 typedef struct GeometrySphere

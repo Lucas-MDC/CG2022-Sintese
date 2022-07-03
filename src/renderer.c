@@ -30,7 +30,7 @@ GLFWwindow* envInitialize(unsigned int width, unsigned int height)
     glViewport(0, 0, width, height);
 
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-
+    
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     if (glfwRawMouseMotionSupported())
@@ -122,14 +122,16 @@ void inputHandler(GLFWwindow* window, Scene* scene)
         glfwSetWindowShouldClose(window, true);
 
     movementHandler(window, scene);
-    //observedHandler(window, scene);
+    observedHandler(window, scene);
 
     int width;
     int height;
 
+    /*
     glfwGetWindowSize(window, &width, &height);
     scene->observer.width  = width;
     scene->observer.height = height;
+    */
 }
 
 /*
@@ -217,6 +219,7 @@ int mainRender(Scene scene)
         tic = clock();
         i++;
 
+        //BUG: FPS CODE IS BROKEN!!!!
         printFPSEverySecond(tic, toc, &acc, &i, &next);
 
         glBindBuffer(GL_ARRAY_BUFFER, VBO);
