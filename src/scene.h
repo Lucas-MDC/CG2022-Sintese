@@ -94,6 +94,22 @@ typedef struct GeometrySphere
     float radius;
 } GeometrySphere;
 
+typedef struct GeometryTriangle
+{
+    float xVertexA;
+    float yVertexA;
+    float zVertexA;
+    float xVertexB;
+    float yVertexB;
+    float zVertexB;
+    float xVertexC;
+    float yVertexC;
+    float zVertexC;
+    float xNormal;
+    float yNormal;
+    float zNormal;
+} GeometryTriangle;
+
 typedef struct Scene
 {
     ObserverProcessed observer;

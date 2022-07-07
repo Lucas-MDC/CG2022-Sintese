@@ -87,31 +87,31 @@ Scene getTestScene()
 
     GeometryColor sphereColorA =
     {
-        0.1,                 // ambient constant
-        1.0, 0.0, 0.0, 0.45, // r, g, b diffuse colors, diffuse constant
+        0.2,                 // ambient constant
+        1.0, 0.0, 0.0, 0.35, // r, g, b diffuse colors, diffuse constant
         1.0, 0.8, 0.8, 0.45, // r, g, b specullar colors, specular constant
         0.0, 10.0, 0.0       // transparency, shininess and refraction constant
     };
 
     GeometryColor sphereColorB =
     {
-        0.1,                 // ambient constant
-        0.0, 1.0, 0.0, 0.45, // r, g, b diffuse colors, diffuse constant
+        0.2,                 // ambient constant
+        0.0, 1.0, 0.0, 0.35, // r, g, b diffuse colors, diffuse constant
         0.8, 1.0, 0.8, 0.45, // r, g, b specullar colors, specular constant
-        0.0, 15.0, 0.10      // transparency, shininess and refraction constant
+        0.0, 15.0, 0.0       // transparency, shininess and refraction constant
     };
 
     GeometryColor sphereColorC =
     {
-        0.1,                 // ambient constant
-        1.0, 1.0, 1.0, 0.45, // r, g, b diffuse colors, diffuse constant
+        0.2,                 // ambient constant
+        1.0, 1.0, 1.0, 0.35, // r, g, b diffuse colors, diffuse constant
         1.0, 1.0, 1.0, 0.45, // r, g, b specullar colors, specular constant
-        0.8, 100.0, 1.2      // transparency, shininess and refraction constant
+        0.8, 100.0, 1.1      // transparency, shininess and refraction constant
     };
 
-    GeometrySphere sphereA = {5.0,  0.0, 0.0, 1.0};
-    GeometrySphere sphereB = {-1.0, -2.0, 0.0, 0.5};
-    GeometrySphere sphereC = {5.0, -4.0, 0.0, 2.0};
+    GeometrySphere sphereA = { 5.0,  0.0, 0.0, 1.0};
+    GeometrySphere sphereB = { 0.0,  -4.0, 0.0, 0.5};
+    GeometrySphere sphereC = { 5.0, -4.0, 0.0, 2.0};
 
     int    lightSourceNumber       = 2;
     float* lightSourceBuffer       = (float*)calloc(1, sizeof(LightSource)*lightSourceNumber);
@@ -161,22 +161,6 @@ Scene getTestScene()
     geometryShapesLocations[2] = loc;
     loc += loadBuffer(&geometryShapesBuffer[loc], (float*)&sphereC, sizeof(GeometrySphere));
     scene.geometryObjectsTotalSize = loc;
-
-    /*
-    printf("%f\n", scene.observer.xVerticalVersor);
-    printf("%f, %f\n", ((LightSource*)scene.lightSources)->attenuation, ((LightSource*)&scene.lightSources[sizeof(LightSource)/sizeof(float)])->attenuation);
-    printf("%f, %f, %f\n", 
-        ((GeometryColor*)&scene.geometryObjectsColor[0*sizeof(GeometryColor)/sizeof(float)])->shininess,
-        ((GeometryColor*)&scene.geometryObjectsColor[1*sizeof(GeometryColor)/sizeof(float)])->shininess,
-        ((GeometryColor*)&scene.geometryObjectsColor[2*sizeof(GeometryColor)/sizeof(float)])->shininess
-    );
-    printf("%f, %f, %f\n", 
-        ((GeometrySphere*)&scene.geometryObjectsShapes[scene.geometryObjectsShapeLocations[0]])->radius,
-        ((GeometrySphere*)&scene.geometryObjectsShapes[scene.geometryObjectsShapeLocations[1]])->radius,
-        ((GeometrySphere*)&scene.geometryObjectsShapes[scene.geometryObjectsShapeLocations[2]])->radius
-    );
-    printf("%i \n", scene.geometryObjectsTotalSize);
-    */
     
     return scene;
 }
