@@ -106,7 +106,7 @@ Scene getTestScene()
         0.2,                 // ambient constant
         1.0, 1.0, 1.0, 0.35, // r, g, b diffuse colors, diffuse constant
         1.0, 1.0, 1.0, 0.45, // r, g, b specullar colors, specular constant
-        0.8, 100.0, 1.1      // transparency, shininess and refraction constant
+        0.8, 100.0, 1.333    // transparency, shininess and refraction constant
     };
 
     GeometrySphere sphereA = { 5.0,  0.0, 0.0, 1.0};
