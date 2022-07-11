@@ -6,7 +6,7 @@ layout (location = 1) in vec2 pixelDislocations;
 
 #define OBSERVER_STRUCT_SIZE 17
 #define LIGHT_SOURCE_STRUCT_SIZE 8
-#define GEOMETRY_COLOR_STRUCT_SIZE 12
+#define GEOMETRY_COLOR_STRUCT_SIZE 13
 
 // DONT TOUCH THESE, THE PRECISE LINES ARE USED TO DYNAMICALLY SET THE SIZES IN THE CPU CODE
 #define LIGHT_SOURCES_SIZE 00000000
@@ -20,6 +20,8 @@ layout (location = 1) in vec2 pixelDislocations;
 
 #define GEOMETRY_TYPE_SPHERE 1
 #define GEOMETRY_TYPE_TRIANGLE 2
+#define GEOMETRY_HAS_NO_VOLUME 0
+#define GEOMETRY_HAS_VOLUME 1
 
 #define INTERSECTED     1.0
 #define NOT_INTERSECTED 0.0
@@ -83,6 +85,7 @@ struct GeometryColor
     float transparency;
     float shininess;
     float refractionConstant;
+    float hasVolume;
 };
 
 struct GeometrySphere
@@ -91,6 +94,14 @@ struct GeometrySphere
     float yCenter;
     float zCenter;
     float radius;
+};
+
+struct GeometryTriangle
+{
+    vec3 vertexA;
+    vec3 vertexB;
+    vec3 vertexC;
+    vec3 normal;
 };
 
 struct GeometryIntersection
@@ -141,10 +152,16 @@ float getLightSourceAttenuation(int lightIndex)
 /*
     absposition = absolute position inside the shapes array
 */
-struct GeometrySphere makeGeometrySphere(int shapeIndex)
+GeometrySphere makeGeometrySphere(int shapeIndex)
 {
     int pos = getShapeAbsolutePosition(shapeIndex);
     return GeometrySphere(shapes[pos + 0], shapes[pos + 1], shapes[pos + 2], shapes[pos + 3]);
+}
+
+GeometryTriangle makeGeometryTriangle(int shapeIndex)
+{
+    int pos = getShapeAbsolutePosition(shapeIndex);
+    return GeometryTriangle(vec3(shapes[pos + 0], shapes[pos + 1], shapes[pos + 2]), vec3(shapes[pos + 3], shapes[pos + 4], shapes[pos + 5]), vec3(shapes[pos + 6], shapes[pos + 7], shapes[pos + 8]), vec3( shapes[pos + 9], shapes[pos + 10], shapes[pos + 11]));
 }
 
 float getGeometryAmbientConstant(int shapeIndex)
@@ -177,6 +194,11 @@ float getGeometryShininess(int shapeIndex)
 float getGeometryRefractionConstant(int shapeIndex)
 {
     return shapeColors[shapeIndex*GEOMETRY_COLOR_STRUCT_SIZE + 11];
+}
+
+float getGeometryVolumeFlag(int shapeIndex)
+{
+    return shapeColors[shapeIndex*GEOMETRY_COLOR_STRUCT_SIZE + 12];
 }
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * Observer Struct Functions * * * * * * * * * * * * * * * * * * * * * * * * * */
@@ -300,19 +322,6 @@ vec4 raySphereIntersection(vec3 origin, vec3 direction, GeometrySphere sphere)
     else
         t = t1;
 
-    /*
-    if(t < 0)
-    {
-        if(isInsideSphere(origin, sphere))
-        {
-            t *= -1;
-            return vec4(origin.x + direction.x*t, origin.y + direction.y*t, origin.z + direction.z*t, INTERSECTED);   
-        }
-        else
-            return vec4(origin.x + direction.x*t, origin.y + direction.y*t, origin.z + direction.z*t, NOT_INTERSECTED); 
-    }
-    */
-
     return vec4(origin.x + direction.x*t, origin.y + direction.y*t, origin.z + direction.z*t, INTERSECTED);   
 }
 
@@ -323,6 +332,43 @@ vec3 sphereNormal(vec3 point, GeometrySphere sphere, float errMod)
         insideFactor = -1;
     
     return insideFactor*normalize(vec3((point.x - sphere.xCenter)/sphere.radius, (point.y - sphere.yCenter)/sphere.radius, (point.z - sphere.zCenter)/sphere.radius));
+}
+
+// https://cadxfem.org/inf/Fast%20MinimumStorage%20RayTriangle%20Intersection.pdf
+vec4 rayTriangleIntersection(vec3 origin, vec3 direction, GeometryTriangle triangle)
+{
+    vec3 ab = triangle.vertexB - triangle.vertexA;
+    vec3 ac = triangle.vertexC - triangle.vertexA;
+
+    vec3  pvec = cross(direction, ac);
+    float det  = dot(ab, pvec);
+
+    if(det > -0.000001 && det < 0.000001)
+        return vec4(0, 0, 0, NOT_INTERSECTED); 
+
+    vec3  tvec = origin - triangle.vertexA;
+    float u    = dot(tvec, pvec)*(1/det);
+
+    if(u < 0.0 || u > 1.0)
+        return vec4(0, 0, 0, NOT_INTERSECTED);
+
+    vec3  qvec = cross(tvec, ab);
+    float v    = dot(direction, qvec)*(1/det);
+
+    if(v < 0.0 || u + v > 1.0)
+        return vec4(0, 0, 0, NOT_INTERSECTED);
+
+    float t = dot(ac, qvec)*(1/det);
+
+    if(t < 0)
+        return vec4(0, 0, 0, NOT_INTERSECTED);
+
+    return vec4(origin.x + direction.x*t, origin.y + direction.y*t, origin.z + direction.z*t, INTERSECTED);  
+}
+
+vec3 triangleNormal(GeometryTriangle triangle)
+{
+    return triangle.normal;
 }
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * Illumination Models Functions * * * * * * * * * * * * * * * * * * * * * * * * * */
@@ -360,8 +406,10 @@ GeometryIntersection rayIntersection(vec3 origin, vec3 direction, int objectID, 
     }
     else if (shapeTypes[objectID] == GEOMETRY_TYPE_TRIANGLE)
     {
-        // TODO: implementar triagulos
-        return GeometryIntersection(NOT_INTERSECTED, vec3(0.0, 0.0, 0.0), vec3(0.0, 0.0, 0.0));   
+        GeometryTriangle triangle = makeGeometryTriangle(objectID);
+        intersect                 = rayTriangleIntersection(origin, direction, triangle);
+        normal                    = triangleNormal(triangle);
+        return GeometryIntersection(intersect.w, vec3(intersect.x, intersect.y, intersect.z), normal); 
     }
     else
     {
@@ -386,14 +434,6 @@ struct RayCasted
     GeometryIntersection intersection;
 };
 
-float getRayTypeError(bool isRefractedRay)
-{
-    if (isRefractedRay)
-        return REFRACTION_ERR;
-    else
-        return REFLECTION_ERR;
-}
-
 RayCasted rayCast(vec3 origin, vec3 direction, int isShadowRay)
 {
     int   minObjectID = 0;
@@ -403,7 +443,7 @@ RayCasted rayCast(vec3 origin, vec3 direction, int isShadowRay)
 
     for(int objectID = 0; objectID < SHAPES_NUMBER; objectID++)
     {
-        intersection = rayIntersection(origin, direction, objectID, 0.001); //getRayTypeError(isRefractedRay)
+        intersection = rayIntersection(origin, direction, objectID, 0.001);
 
         if(hasNotIntersected(intersection))
             continue;
@@ -506,9 +546,9 @@ vec3 getRefractionOrigin(vec3 origin, vec3 direction, vec3 intersectionPoint, bo
         return intersectionPoint + direction*REFRACTION_ERR*sqrt(distance(origin, intersectionPoint));
 }
 
-float getRefractedRayRefractionConstant(float internalRefractionConstant, float externalRefractionConstant, bool isTotalInternallyReflected)
+float getRefractedRayRefractionConstant(float internalRefractionConstant, float externalRefractionConstant, bool isTotalInternallyReflected, float hasVolume)
 {
-    if(isTotalInternallyReflected)
+    if(isTotalInternallyReflected || (hasVolume == GEOMETRY_HAS_NO_VOLUME))
         return internalRefractionConstant;
     else
         return externalRefractionConstant;
@@ -536,7 +576,7 @@ Witted witted(vec3 origin, vec3 direction, bool isRefractedRay, float currentRef
 
     rgb += phongIlluminationAmbientLight(ambientLight, getGeometryAmbientConstant(raycasted.objectID), getGeometryDiffuseColor(raycasted.objectID), getGeometryTransparency(raycasted.objectID));
 
-    float refractedRayRefractionConstant = getRefractedRayRefractionConstant(currentRefractionConstant, getGeometryRefractionConstant(raycasted.objectID), isTotalInternallyReflected);
+    float refractedRayRefractionConstant = getRefractedRayRefractionConstant(currentRefractionConstant, getGeometryRefractionConstant(raycasted.objectID), isTotalInternallyReflected, getGeometryVolumeFlag(raycasted.objectID));
 
     return Witted(origin, direction, raycasted, reflectionOrigin, refractionOrigin, reflectionDirection, refractionDirection, currentRefractionConstant, refractedRayRefractionConstant, min(vec3(rgb.x, rgb.y, rgb.z), vec3(1.0, 1.0, 1.0)));
 }
@@ -688,7 +728,7 @@ vec3 rayTrace(vec3 origin, vec3 direction)
                     0, getGeometryTransparency(objectID)
                 );
                 // Uncomment to render relections
-                //rgb += vec3(reflectionColor.x,  reflectionColor.y,  reflectionColor.z)*vec3(specularColor.x, specularColor.y, specularColor.z)*(1-getGeometryTransparency(objectID));
+                rgb += vec3(reflectionColor.x,  reflectionColor.y,  reflectionColor.z)*vec3(specularColor.x, specularColor.y, specularColor.z) ;
                 rgb += ray.rightChildColor*vec3(diffuseColor.x, diffuseColor.y, diffuseColor.z);
             }
 

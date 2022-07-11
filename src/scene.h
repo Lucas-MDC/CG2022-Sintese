@@ -5,6 +5,8 @@
 #define LIGHT_TYPE_POINT 1.0
 #define GEOMETRY_TYPE_SPHERE 1
 #define GEOMETRY_TYPE_TRIANGLE 2
+#define GEOMETRY_HAS_NO_VOLUME 0.0
+#define GEOMETRY_HAS_VOLUME 1.0
 
 typedef struct Observer
 {
@@ -84,6 +86,7 @@ typedef struct GeometryColor
     float transparency;
     float shininess;
     float refractionConstant;
+    float hasVolume;
 } GeometryColor;
 
 typedef struct GeometrySphere
