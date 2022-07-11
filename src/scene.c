@@ -123,25 +123,86 @@ Scene getTestScene()
 
     GeometryColor triangleColorA =
     {
-        0.1,                 // ambient constant
-        1.0, 1.0, 1.0, 0.00, // r, g, b diffuse colors, diffuse constant
-        1.0, 1.0, 1.0, 0.90, // r, g, b specullar colors, specular constant
-        0.0, 100.0, 1.333,   // transparency, shininess and refraction constant
+        0.2,                 // ambient constant
+        1.0, 1.0, 1.0, 0.40, // r, g, b diffuse colors, diffuse constant
+        1.0, 1.0, 1.0, 0.40, // r, g, b specullar colors, specular constant
+        0.0, 100.0, 0.0,   // transparency, shininess and refraction constant
         GEOMETRY_HAS_NO_VOLUME
     };
 
-    GeometrySphere   sphereA   = { 5.0,  0.0, 0.0, 1.0};
-    GeometrySphere   sphereB   = { 0.0, -4.0, 0.0, 0.5};
-    GeometrySphere   sphereC   = { 5.0, -4.0, 0.0, 2.0};
-    GeometryTriangle triangleA = makeGeometryTriangle((vec3){10.0, -6.0, -1.0}, (vec3){10.0, -4.0, 4.0}, (vec3){10.0, -2.0, 1.0});
+    GeometryColor triangleColorB =
+    {
+        0.2,                 // ambient constant
+        1.0, 1.0, 1.0, 0.40, // r, g, b diffuse colors, diffuse constant
+        1.0, 1.0, 1.0, 0.40, // r, g, b specullar colors, specular constant
+        0.0, 100.0, 0.0,     // transparency, shininess and refraction constant
+        GEOMETRY_HAS_NO_VOLUME
+    };
+
+    GeometryColor triangleColorC =
+    {
+        0.0,                 // ambient constant
+        1.0, 1.0, 1.0, 0.00, // r, g, b diffuse colors, diffuse constant
+        1.0, 1.0, 1.0, 1.00, // r, g, b specullar colors, specular constant
+        0.0, 100.0, 0.0,     // transparency, shininess and refraction constant
+        GEOMETRY_HAS_NO_VOLUME
+    };
+
+    GeometryColor triangleColorD =
+    {
+        0.0,                 // ambient constant
+        1.0, 1.0, 1.0, 0.00, // r, g, b diffuse colors, diffuse constant
+        1.0, 1.0, 1.0, 1.00, // r, g, b specullar colors, specular constant
+        0.0, 100.0, 0.0,     // transparency, shininess and refraction constant
+        GEOMETRY_HAS_NO_VOLUME
+    };
+
+    GeometryColor triangleColorE =
+    {
+        0.0,                 // ambient constant
+        1.0, 1.0, 1.0, 0.00, // r, g, b diffuse colors, diffuse constant
+        1.0, 1.0, 1.0, 1.00, // r, g, b specullar colors, specular constant
+        0.0, 100.0, 0.0,     // transparency, shininess and refraction constant
+        GEOMETRY_HAS_NO_VOLUME
+    };
+
+    GeometryColor triangleColorF =
+    {
+        0.0,                 // ambient constant
+        1.0, 1.0, 1.0, 0.00, // r, g, b diffuse colors, diffuse constant
+        1.0, 1.0, 1.0, 1.00, // r, g, b specullar colors, specular constant
+        0.0, 100.0, 0.0,     // transparency, shininess and refraction constant
+        GEOMETRY_HAS_NO_VOLUME
+    };
+
+    GeometryColor triangleColorG =
+    {
+        0.2,                 // ambient constant
+        1.0, 1.0, 1.0, 0.40, // r, g, b diffuse colors, diffuse constant
+        1.0, 1.0, 1.0, 0.40, // r, g, b specullar colors, specular constant
+        0.8, 100.0, 1.333,     // transparency, shininess and refraction constant
+        GEOMETRY_HAS_NO_VOLUME
+    };
+
+    
+    GeometrySphere   sphereA   = { 5.0, 4.0, 0.0, 1.0};
+    GeometrySphere   sphereB   = { 0.0, 0.0, 0.0, 0.5};
+    GeometrySphere   sphereC   = { 5.0, 0.0, 0.0, 2.0};
+    GeometryTriangle triangleA = makeGeometryTriangle((vec3){-5.0, -10.0, -4.0} , (vec3){15.0, -10.0, -4.0 }, (vec3){15.0,  10.0, -4.0});
+    GeometryTriangle triangleB = makeGeometryTriangle((vec3){-5.0, -10.0, -4.0} , (vec3){15.0,  10.0, -4.0 }, (vec3){-5.0,  10.0, -4.0});
+    GeometryTriangle triangleC = makeGeometryTriangle((vec3){-5.0,  10.0, -4.0} , (vec3){-5.0,  10.0,  4.0 }, (vec3){15.0,  10.0,  4.0});
+    GeometryTriangle triangleD = makeGeometryTriangle((vec3){15.0,  10.0,  4.0} , (vec3){15.0,  10.0, -4.0 }, (vec3){-5.0,  10.0, -4.0});
+    GeometryTriangle triangleE = makeGeometryTriangle((vec3){-5.0,  -10.0, -4.0}, (vec3){-5.0, -10.0,  4.0 }, (vec3){15.0, -10.0,  4.0});
+    GeometryTriangle triangleF = makeGeometryTriangle((vec3){15.0,  -10.0,  4.0}, (vec3){15.0, -10.0, -4.0 }, (vec3){-5.0, -10.0, -4.0});
+    GeometryTriangle triangleG = makeGeometryTriangle((vec3){20.0,  -5.0,  0.0}, (vec3){20.0, 0.0, 4.0 }, (vec3){20.0, 5.0, 0.0});
 
     int    lightSourceNumber       = 2;
     float* lightSourceBuffer       = (float*)calloc(1, sizeof(LightSource)*lightSourceNumber);
-    int    geometryShapesNumber    = 4;
+    int    geometryShapesNumber    = 10;
     int*   geometryShapesLocations = (int*  )calloc(1, sizeof(unsigned int)*geometryShapesNumber);
     int*   geometryTypesBuffer     = (int*  )calloc(1, sizeof(float)*geometryShapesNumber);
     float* geometryColorsBuffer    = (float*)calloc(1, sizeof(GeometryColor)*geometryShapesNumber);
-    float* geometryShapesBuffer    = (float*)calloc(1, sizeof(GeometrySphere)*3 + sizeof(GeometryTriangle));
+    float* geometryShapesBuffer    = (float*)calloc(1, sizeof(GeometrySphere)*3 + sizeof(GeometryTriangle)*7);
 
     Scene scene = 
     {
@@ -168,6 +229,12 @@ Scene getTestScene()
     geometryTypesBuffer[1] = GEOMETRY_TYPE_SPHERE;
     geometryTypesBuffer[2] = GEOMETRY_TYPE_SPHERE;
     geometryTypesBuffer[3] = GEOMETRY_TYPE_TRIANGLE;
+    geometryTypesBuffer[4] = GEOMETRY_TYPE_TRIANGLE;
+    geometryTypesBuffer[5] = GEOMETRY_TYPE_TRIANGLE;
+    geometryTypesBuffer[6] = GEOMETRY_TYPE_TRIANGLE;
+    geometryTypesBuffer[7] = GEOMETRY_TYPE_TRIANGLE;
+    geometryTypesBuffer[8] = GEOMETRY_TYPE_TRIANGLE;
+    geometryTypesBuffer[9] = GEOMETRY_TYPE_TRIANGLE;
 
     // Loading Geometry Colors
     loc = 0;
@@ -175,6 +242,12 @@ Scene getTestScene()
     loc += loadBuffer(&geometryColorsBuffer[loc], (float*)&sphereColorB  , sizeof(GeometryColor));
     loc += loadBuffer(&geometryColorsBuffer[loc], (float*)&sphereColorC  , sizeof(GeometryColor));
     loc += loadBuffer(&geometryColorsBuffer[loc], (float*)&triangleColorA, sizeof(GeometryColor));
+    loc += loadBuffer(&geometryColorsBuffer[loc], (float*)&triangleColorB, sizeof(GeometryColor));
+    loc += loadBuffer(&geometryColorsBuffer[loc], (float*)&triangleColorC, sizeof(GeometryColor));
+    loc += loadBuffer(&geometryColorsBuffer[loc], (float*)&triangleColorD, sizeof(GeometryColor));
+    loc += loadBuffer(&geometryColorsBuffer[loc], (float*)&triangleColorE, sizeof(GeometryColor));
+    loc += loadBuffer(&geometryColorsBuffer[loc], (float*)&triangleColorF, sizeof(GeometryColor));
+    loc += loadBuffer(&geometryColorsBuffer[loc], (float*)&triangleColorG, sizeof(GeometryColor));
 
     // Loading Geometry Shapes
     loc = 0;
@@ -186,6 +259,18 @@ Scene getTestScene()
     loc += loadBuffer(&geometryShapesBuffer[loc], (float*)&sphereC, sizeof(GeometrySphere));
     geometryShapesLocations[3] = loc;
     loc += loadBuffer(&geometryShapesBuffer[loc], (float*)&triangleA, sizeof(GeometryTriangle));
+    geometryShapesLocations[4] = loc;
+    loc += loadBuffer(&geometryShapesBuffer[loc], (float*)&triangleB, sizeof(GeometryTriangle));
+    geometryShapesLocations[5] = loc;
+    loc += loadBuffer(&geometryShapesBuffer[loc], (float*)&triangleC, sizeof(GeometryTriangle));
+    geometryShapesLocations[6] = loc;
+    loc += loadBuffer(&geometryShapesBuffer[loc], (float*)&triangleD, sizeof(GeometryTriangle));
+    geometryShapesLocations[7] = loc;
+    loc += loadBuffer(&geometryShapesBuffer[loc], (float*)&triangleE, sizeof(GeometryTriangle));
+    geometryShapesLocations[8] = loc;
+    loc += loadBuffer(&geometryShapesBuffer[loc], (float*)&triangleF, sizeof(GeometryTriangle));
+    geometryShapesLocations[9] = loc;
+    loc += loadBuffer(&geometryShapesBuffer[loc], (float*)&triangleG, sizeof(GeometryTriangle));
     scene.geometryObjectsTotalSize = loc;
     
     return scene;
